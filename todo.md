@@ -6,10 +6,10 @@
  
 ## new feature list
 ### progres
-
+ * TLS
+ * add simple Dockerfile (based on a slim distro)
 
 ### near
- 
  * personal stats
  * mfa admins
 

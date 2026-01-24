@@ -1,11 +1,3 @@
-# TODOS
-
- * TLS
- * fully multilingual
- * add information to word
- * add simpe Dockerfile (based on a slim distro)
-
-
 # Simple multilingual vocabletrainer
 
 Easy Vocable- and Phrasetrainer for different languages. All translations except german are done by KI, so sorry for errors ;)
