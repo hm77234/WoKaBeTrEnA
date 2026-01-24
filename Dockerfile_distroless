@@ -1,0 +1,49 @@
+#EXPERIMENTIAL
+# python 3.13 / 3.12 was not in google distroless hub available
+# so i usesed alexos for testing, a simpler will follow
+FROM python:3.13-slim-bookworm AS builder 
+RUN apt-get update && apt-get install -y zlib1g libssl3 libzstd1 libsqlite3-0 && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY requirements.txt .
+RUN python -m venv /venv --copies \
+  && /venv/bin/pip install --no-cache-dir -U pip \
+  && /venv/bin/pip install --no-cache-dir -r requirements.txt \
+  && /venv/bin/python -c "import ssl, uvicorn; print('Ready')"
+# Copy Python libs (existing)
+RUN find /usr -name "*libpython3.13*.so*" -exec cp {} /venv/lib/ \; \
+  && find /lib -name "*python3.13*" -exec cp {} /venv/lib/ \;
+
+# Add zlib and SSL runtime libs
+
+#RUN mkdir -p /venv/lib/external \
+#  && cp /lib/x86_64-linux-gnu/libz.so.1 /venv/lib/external/ \
+#  && cp /lib/x86_64-linux-gnu/libzstd.so.1 /venv/lib/external/ \
+#  && cp /lib/x86_64-linux-gnu/libssl.so.3 /venv/lib/external/ \
+#  && cp /lib/x86_64-linux-gnu/libcrypto.so.3 /venv/lib/external/ \
+#  && cp /lib/x86_64-linux-gnu/libsqlite3*.so* /venv/lib/external/ \
+#  && ldconfig /venv/lib/external
+
+RUN mkdir -p /venv/lib/external \
+  && cp /lib/aarch64-linux-gnu/libz.so.1 /venv/lib/external/ \
+  && cp /lib/aarch64-linux-gnu/libzstd.so.1 /venv/lib/external/ \
+  && cp /lib/aarch64-linux-gnu/libssl.so.3 /venv/lib/external/ \
+  && cp /lib/aarch64-linux-gnu/libcrypto.so.3 /venv/lib/external/ \
+  && cp /lib/aarch64-linux-gnu/libsqlite3*.so* /venv/lib/external/ \
+  && ldconfig /venv/lib/external
+
+FROM al3xos/python-distroless:3.13-debian12
+COPY --from=builder --chown=nonroot:nonroot /venv/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+# venv/bin for scripts only
+COPY --from=builder --chown=nonroot:nonroot /venv/bin /venv/bin
+# Copy external libs
+#COPY --from=builder --chown=nonroot:nonroot /venv/lib/external /lib/x86_64-linux-gnu
+COPY --from=builder --chown=nonroot:nonroot /venv/lib/external /lib/aarch64-linux-gnu
+COPY --chown=nonroot:nonroot /app /app
+# your TLS here, don't forget the entrypoint --ssl-...
+#COPY --chown=nonroot:nonroot /your_location/your_Certs /app/certs
+WORKDIR /app
+ENV PATH="/venv/bin:$PATH" \
+    LD_LIBRARY_PATH="/lib/aarch64-linux-gnu:$LD_LIBRARY_PATH"
+
+ENTRYPOINT ["/venv/bin/python", "-m", "uvicorn", "asgi:asgi_app", "--host", "0.0.0.0", "--port", "8000"]

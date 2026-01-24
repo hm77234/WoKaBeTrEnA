@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>✏️ Vokabel bearbeiten</h1>
+<form method="POST">
+    <input name="mutter_word" value="{{ word.mutter_word }}" placeholder="Deutsch" required>
+    <input name="foreign_word" value="{{ word.foreign_word }}" placeholder="Spanisch" required>
+    <div>
+    <label for="info">{{ t['info'] if t.get('info') else 'Info' }}</label>
+    <input type="text" id="info" name="info" value="{{ word.info or '' }}">
+    </div>
+    <button type="submit">💾 Speichern</button>
+    <a href="/admin">← Zurück</a>
+</form>
+{% endblock %}

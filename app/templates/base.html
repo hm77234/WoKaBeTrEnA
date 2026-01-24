@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ t.title }}</title>
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px; }
+        nav { background: #f0f0f0; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
+        .btn-admin { background: #007bff; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; }
+        .btn-student { background: #28a745; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; }
+        .lang-badge { background: #e9ecef; padding: 4px 8px; margin: 2px; border-radius: 12px; }
+        flash { color: green; margin: 10px 0; }
+    </style>
+</head>
+<body>
+     <!-- ✅ Hidden input for legacy JS - matches your getElementById('csrf_token') -->
+    <input type="hidden" id="csrf_token" value="{{ csrf_token() }}">
+    
+    <!-- Your nav and content here -->
+
+    <!-- Navigation -->
+ <nav>
+    {% if current_user.is_authenticated %}
+        Hello {{ current_user.username }} {% if current_user.is_admin %}(👑){% endif %}
+        <a href="{{ url_for('logout') }}">{{ t.logout or 'Logout' }}</a> - <a href="{{ url_for('change_pw.change_password') }}">Change Password</a>
+    {% else %}
+        <a href="{{ url_for('login') }}">{{ t.login }}</a>
+    {% endif %}
+
+</nav>
+
+    <!-- Admin-Only Links -->
+    {% if current_user.is_admin %}
+    <div style="background:#e7f3ff; padding:10px; border-radius:4px; margin-bottom:20px;">
+        <a href="/admin" class="btn-admin">⚙️ Dashboard</a>
+        <a href="/admin/users" class="btn-admin">👥 User</a>
+        <a href="/admin/reset-pairs" class="btn-admin">🔄 Pairs Reset</a>
+    </div>
+    {% endif %}
+
+
+    <!-- Student-Only Links -->
+    {% if is_student() %}
+        <div style="background:#e8f5e8; padding:10px; border-radius:4px; margin-bottom:20px;">
+            <a href="{{ url_for('stats') }}" class="btn-student">📊 Meine Stats</a>
+        </div>
+    {% endif %}
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div style="background:#d4edda; color:#155724; padding:15px; border-radius:4px; margin-bottom:20px;">
+                {{ messages[0] }}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Page Content -->
+    {% block content %}{% endblock %}
+
+    <footer style="margin-top:40px; text-align:center; color:#666;">
+        <small>WoKaBeTrEnA - {{ config.MUTTERLANG|upper() }} - Ver.: {{ config.VERSION }}</small>
+         
+    </footer>
+
+</body>
+</html>

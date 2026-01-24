@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ t.no_words_found }}</h1>
+<p>{{ t.no_words_found_in_knowledgebase }}</p>
+<form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+        {% for k,v in knowledgebase_dict.items() %}
+        <label>
+           {% if v["status"] == status %}
+                <input type="radio" name="knowledgebase" value="{{ k }}" checked>
+                {{ v["status"] }} 
+            {% else %}
+                <input type="radio" name="knowledgebase" value="{{ k }}" >
+                {{ v["status"] }} 
+            {% endif %}
+        </label>
+        {% endfor %}
+    </div>
+    <button type="submit" class="btn-student">
+        ✅ change
+    </button>
+</form>
+<a href='/admin'>Admin (CSV-Import)</a>
+{% endblock %}

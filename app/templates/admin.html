@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:900px; margin:0 auto;">
+    <!-- Muttersprache + Wechsel -->
+    <div style="background:#e3f2fd; padding:20px; border-radius:12px; margin-bottom:30px;">
+        <h2>{{ t.admin }}</h2>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <label>{{ t.mutter_label }}:</label>
+            <strong style="font-size:1.2em;">{{ mutter.title() }}</strong>
+        
+            <a href="/admin/reset-pairs" style="background:#FF9800; color:white; padding:8px 16px; text-decoration:none; border-radius:6px;">
+                🔄 {{ t.reset or 'Reset Pairs' }}
+            </a>
+        </div>
+    </div>
+    
+    <!-- Language Pairs -->
+    <h3>🌍 {{ t.language_pairs or 'Language Pairs' }} ({{ pairs|length }})</h3>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:15px;">
+        {% for pair in pairs %}
+        <div style="background:#f0f8ff; padding:20px; border-radius:12px; border-left:4px solid #2196F3;">
+            <h4 style="margin:0 0 10px 0;">{{ pair.name_title }}</h4>
+            <div style="color:#666; margin-bottom:15px;">{{ pair.name }}</div>
+            <div>
+                <a href="/admin/words/{{ pair.name }}" style="background:#4CAF50; color:white; padding:10px 20px; text-decoration:none; border-radius:6px; margin-right:10px;">
+                    📚 {{ t.words or 'Words' }}
+                </a>
+                <a href="/test/{{ pair.name }}" style="background:#2196F3; color:white; padding:10px 20px; text-decoration:none; border-radius:6px;">
+                    🧪 {{ t.test or 'Test' }}
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- CSV Import -->
+    <div style="background:#fff3e0; padding:25px; border-radius:12px; margin-top:30px;">
+        <h3>📥 {{ t.import_csv }}</h3>
+        <form method="POST" enctype="multipart/form-data" style="display:flex; gap:15px; flex-wrap:wrap; align-items:end;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="file" name="csvfile" accept=".csv" required style="padding:12px; flex:1; min-width:250px;">
+            <select name="language_pair" style="padding:12px; flex:1; min-width:200px;">
+                {% for p in pairs %}
+                <option value="{{ p.id }}">{{ p.name_title }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" name="upload_csv" style="background:#FF5722; color:white; padding:12px 30px; border:none; border-radius:6px; font-weight:bold;">
+                {{ t.import or 'Import' }}
+            </button>
+        </form>
+        <small>Format: mutter_word,foreign_word,foreign_lang (CSV, UTF-8)</small>
+    </div>
+</div>
+{% endblock %}

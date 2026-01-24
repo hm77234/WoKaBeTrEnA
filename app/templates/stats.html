@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>📊 {{ t['stats_title'] }}</h1>
+
+<table style="width:100%; border-collapse:collapse;">
+<thead>
+    <tr style="background:#007bff; color:white;">
+        <th>{{ t['foreign_language'] }}</th>
+        <th>{{ t['words'] }}</th>
+        <th>{{ t['test_ratio'] }}</th>
+        <th>{{ t['strongknowledge'] }}</th>
+        <th>{{ t['mediumknowledge'] }}</th>
+        <th>{{ t['poorknowledge'] }}</th>
+    </tr>
+</thead>
+<tbody>
+{% if stats %}
+    {% for s in stats %}
+    <tr>
+        <td>{{ s.lang }}</td>
+        <td align="center">{{ s.total_words }}</td>
+        <td align="center">{{ '%.1f'|format(s.test_ratio) if s.get('test_ratio') else '0.0' }}</td>
+        <td align="center">{{ s.strong_pct if s.get('strong_pct') else '-' }}%</td>
+        <td align="center">{{ s.medium_pct if s.get('medium_pct') else '-' }}%</td>
+        <td align="center">{{ s.weak_pct if s.get('weak_pct') else '-' }}%</td>
+    </tr>
+    {% endfor %}
+{% else %}
+    <tr>
+        <td colspan="6" style="text-align:center; color:#999;">
+            {{ t['no_data'] }}
+        </td>
+    </tr>
+{% endif %}
+</tbody>
+</table>
+
+<p style="margin-top:20px;">
+    <a href="/test/{{ mutter }}-spanisch" class="btn-student">🧠 {{ t['test_title'] or 'Test' }}</a>
+    <a href="/admin" class="btn-admin">⚙️ {{ t['admin'] or 'Admin' }}</a>
+</p>
+{% endblock %}

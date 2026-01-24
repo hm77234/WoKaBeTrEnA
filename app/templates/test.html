@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>🧠 {{ t['test_title'] }}: {{ pair.name_title }}</h1>
+
+{% if result %}
+  <div class="flash">
+    {{ result }}
+    {% if score_pct is not none %} ({{ '%.1f'|format(score_pct) }}%) {% endif %}
+  </div>
+  {% if prompt_word %}
+    <p>{{ direction }}: <strong>{{ prompt_word }}</strong> → {{ target_word }}</p>
+  {% endif %}
+{% endif %}
+
+<form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="word_id" value="{{ word.id }}">
+
+    <div style="font-size:2em; margin:20px 0;">
+        {% if d == 'A→B' %}
+            {{ word.mutter_word }} → ?
+        {% else %}
+            {{ word.foreign_word }} → ?
+        {% endif %}
+        {% if word.info %}
+            <p class="word-info">{{ word.info }}</p>
+        {% endif %}
+    </div>
+
+    <input type="text" name="answer" autofocus
+           style="width:100%; padding:10px; font-size:1.2em;">
+
+    <div>
+        <label>
+            {% if d == 'A→B' %}
+                <input type="radio" name="direction" value="A→B" checked>
+            {% else %}
+                <input type="radio" name="direction" value="A→B">
+            {% endif %}
+            {{ mutter }} → {{ foreign }}
+        </label>
+        <label>
+            {% if d == 'B→A' %}
+                <input type="radio" name="direction" value="B→A" checked>
+            {% else %}
+                <input type="radio" name="direction" value="B→A">
+            {% endif %}
+            {{ foreign }} → {{ mutter }}
+        </label>
+        <label>
+            {% if rd == '1' %}
+                <input type="checkbox" name="random_direction" value="1" checked>
+            {% else %}
+                <input type="checkbox" name="random_direction" value="1">
+            {% endif %}
+            random
+        </label>
+    </div>
+    <div>
+        {% for k,v in knowledgebase_dict.items() %}
+        <label>
+           {% if v["status"] == status %}
+                <input type="radio" name="knowledgebase" value="{{ k }}" checked>
+                {{ v["status"] }} 
+            {% else %}
+                <input type="radio" name="knowledgebase" value="{{ k }}" >
+                {{ v["status"] }} 
+            {% endif %}
+        </label>
+        {% endfor %}
+    </div>
+    <button type="submit" class="btn-student">
+        ✅ {{ t['check'] if 'check' in t else 'Prüfen' }}
+    </button>
+</form>
+<br>
+<div>
+    <a href="/stats" class="btn-student">📊 {{ t['stats_title'] }}</a> Statistik
+</div>
+
+<div>
+    <p>{{ t['difficulty'] }}: {{ difficulty }} - limitiert auf 50 Vokabel außer "all"</p>
+</div>
+{% endblock %}

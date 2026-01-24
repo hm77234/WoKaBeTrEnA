@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ t.login }}</h1>
+<form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input name="username" placeholder="{{ t.username }}">
+    <input name="password" type="password" placeholder="{{ t.password }}">
+    <button type="submit">{{ t.login }}</button>
+</form>
+{% endblock %}

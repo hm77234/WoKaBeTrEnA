@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>📚 {{ pair.name_title }} ({{ words|length }})</h1>
+
+<!-- Suchfeld -->
+<div style="margin-bottom:20px;">
+    <form method="GET" style="display:flex; gap:10px;">
+        <input 
+            type="text" 
+            name="q" 
+            value="{{ q }}" 
+            placeholder="search in {{ mutter.title() }} or {{ foreign.title() }}"
+            style="flex:1; padding:10px;"
+        >
+        <button type="submit" style="padding:10px 20px;">🔍</button>
+        {% if q %}
+            <a href="?{{ url_for('admin_words', pair_name=pair.name) }}" 
+               style="padding:10px 20px; background:#6c757d; color:white;">🗑️ Reset</a>
+        {% endif %}
+    </form>
+    <div style="color:#666;">
+        {% if q %}
+            {{ words|length }} Ergebnisse für "{{ q }}"
+        {% else %}
+            Alle {{ words|length }} Vokabeln
+        {% endif %}
+    </div>
+</div>
+
+<!-- vocable-table with  inline edit -->
+<table>
+    <thead>
+        <tr>
+            <th>Mutter</th>
+            <th>Fremd</th>
+            <th>Info</th>
+            <th>Score</th>
+            <th>Aktion</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for word in words %}
+        <tr data-word-id="{{ word.id }}"
+            data-mutter="{{ word.mutter_word | e }}"
+            data-foreign="{{ word.foreign_word | e }}"
+            data-info="{{ word.info | e if word.info else '' }}">
+            
+            <td class="mutter-cell">{{ word.mutter_word }}</td>
+            <td class="foreign-cell">{{ word.foreign_word }}</td>
+            <td class="info-cell">{{ word.info or '' }}</td>
+            <td class="score-cell">{{ word.score_pct }}%</td>
+            <td class="action-cell">    
+                <button class="edit-btn">✏️</button>
+                <button class="delete-btn" data-word-id="{{ word.id }}" data-mutter="{{ word.mutter_word }}">🗑️</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+<script>
+// 🔥 CSRF Token
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                  document.getElementById('csrf_token')?.value ||
+                  '';
+
+// Notification helper
+function showNotification(message) {
+    const notif = document.createElement('div');
+    notif.className = 'notification success';
+    notif.textContent = message;
+    document.body.appendChild(notif);
+    setTimeout(() => notif.remove(), 3000);
+}
+
+// Delete Word (bleibt unverändert)
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('delete-btn')) {
+        const wordId = e.target.dataset.wordId;
+        const origMutter = e.target.dataset.mutter;
+        deleteWord(wordId, origMutter);
+    }
+});
+
+function deleteWord(wordId, origMutter) {
+    if (!confirm(`Vokabel wirklich löschen? ${origMutter}`)) return;
+    
+    fetch(`/admin/delete_word/${wordId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const row = document.querySelector(`tr[data-word-id="${wordId}"]`);
+            if (row) row.remove();
+            showNotification(data.message);
+        } else {
+            alert(data.error || 'Fehler beim Löschen');
+        }
+    })
+    .catch(error => {
+        console.error('Delete error:', error);
+        alert('Netzwerkfehler');
+    });
+}
+
+// 🔥 FIX: Edit Row - KEIN automatisches Save beim Blur
+function editRow(wordId) {
+    const row = document.querySelector(`tr[data-word-id="${wordId}"]`);
+    if (!row) return;
+    
+    // Speichere original values
+    const origMutter = row.dataset.mutter || row.querySelector('.mutter-cell').textContent.trim();
+    const origForeign = row.dataset.foreign || row.querySelector('.foreign-cell').textContent.trim();
+    const origInfo = row.dataset.info || row.querySelector('.info-cell').textContent.trim();
+    
+    // Convert cells to inputs (OHNE Event-Listener hier!)
+    row.querySelector('.mutter-cell').innerHTML = `<input value="${origMutter}" class="edit-input mutter-input">`;
+    row.querySelector('.foreign-cell').innerHTML = `<input value="${origForeign}" class="edit-input foreign-input">`;
+    row.querySelector('.info-cell').innerHTML = `<input value="${origInfo}" class="edit-input info-input">`;
+    
+    // Action buttons
+    row.querySelector('.action-cell').innerHTML = `
+        <button onclick="saveRow(${wordId})" class="save-btn">💾</button>
+        <button onclick="cancelEdit(${wordId})" class="cancel-btn">❌</button>
+    `;
+    
+    // 🔥 FIX: Event-Listener NACHDEM Inputs erstellt wurden + KEIN BLUR!
+    const inputs = row.querySelectorAll('.edit-input');
+    inputs.forEach(input => {
+        input.addEventListener('keypress', e => { 
+            if (e.key === 'Enter') saveRow(wordId); 
+        });
+        // 🔥 KEIN BLUR mehr - nur Enter oder Buttons!
+    });
+    
+    // Focus first input
+    inputs[0].focus();
+    inputs[0].select();
+}
+
+// 🔥 FIX: Save Row - unverändert
+async function saveRow(wordId) {
+    const row = document.querySelector(`tr[data-word-id="${wordId}"]`);
+    const mutterInput = row.querySelector('.mutter-cell input');
+    const foreignInput = row.querySelector('.foreign-cell input');
+    const infoInput = row.querySelector('.info-cell input');
+    
+    const mutter_word = mutterInput.value.trim();
+    const foreign_word = foreignInput.value.trim();
+    const info = infoInput.value.trim();
+    
+    if (!mutter_word || !foreign_word) {
+        alert('Mutter- und Fremdwort ausfüllen!');
+        mutterInput.focus();
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/admin/update_word/${wordId}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                mutter_word,
+                foreign_word,
+                info
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update display
+            row.querySelector('.mutter-cell').textContent = data.word.mutter_word;
+            row.querySelector('.foreign-cell').textContent = data.word.foreign_word;
+            row.querySelector('.info-cell').textContent = data.word.info || '';
+            row.querySelector('.score-cell').textContent = data.word.score_pct + '%';
+            
+            // Reset action buttons MIT edit-btn
+            row.querySelector('.action-cell').innerHTML = 
+                `<button class="edit-btn">✏️</button>
+                 <button class="delete-btn" data-word-id="${wordId}" data-mutter="${data.word.mutter_word}">🗑️</button>`;
+            
+            // Update data-* attributes
+            row.dataset.mutter = data.word.mutter_word;
+            row.dataset.foreign = data.word.foreign_word;
+            row.dataset.info = data.word.info || '';
+            
+            showNotification('Vokabel gespeichert!');
+        } else {
+            alert('Fehler: ' + (data.error || 'Unbekannt'));
+        }
+    } catch (error) {
+        console.error('Save error:', error);
+        alert('Netzwerkfehler');
+    }
+}
+
+// 🔥 FIX: Cancel Edit - KEINE Parameter mehr nötig
+function cancelEdit(wordId) {
+    const row = document.querySelector(`tr[data-word-id="${wordId}"]`);
+    // Reset aus data-* attributes (sicherer)
+    row.querySelector('.mutter-cell').textContent = row.dataset.mutter || '';
+    row.querySelector('.foreign-cell').textContent = row.dataset.foreign || '';
+    row.querySelector('.info-cell').textContent = row.dataset.info || '';
+    
+    // Reset action buttons
+    row.querySelector('.action-cell').innerHTML = `
+        <button class="edit-btn">✏️</button>
+        <button class="delete-btn" data-word-id="${wordId}" data-mutter="${row.dataset.mutter}">🗑️</button>
+    `;
+}
+
+// Event Listeners (delegation)
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('edit-btn')) {
+        const row = e.target.closest('tr');
+        const wordId = row.dataset.wordId;
+        editRow(parseInt(wordId));
+    }
+});
+</script>
+
+
+<a href="/admin">← Zurück</a>
+{% endblock %}

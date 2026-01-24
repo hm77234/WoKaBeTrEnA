@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+# In Templates:
+csrf_token = csrf_token()
+<h1>{{ t.users }} ({{ users|length }})</h1>
+
+<!-- Create User -->
+<section>
+    <h3>{{ t.create_user }}</h3>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input name="username" placeholder="{{ t.username }}" required>
+        <input name="password" type="password" placeholder="{{ t.password }}" required>
+        <select name="role">
+            <option value="student">{{ t.student }}</option>
+            <option value="administrator">{{ t.administrator }}</option>
+        </select>
+        <button type="submit">{{ t.create or 'Create' }}</button>
+    </form>
+</section>
+
+<!-- User Table -->
+<table>
+    {% for user in users %}
+    <tr>
+        <td>{{ user.username }}</td>
+        <td>{% if user.is_admin %}{{ t.administrator }}{% else %}{{ t.student }}{% endif %}</td>
+        <td><a href="/admin/delete/{{ user.username }}" onclick="return confirm('{{ t.delete }}?')">{{ t.delete }}</a></td>
+    </tr>
+    {% endfor %}
+</table>
+
+<a href="/admin">{{ t.back }}</a>
+{% endblock %}
+

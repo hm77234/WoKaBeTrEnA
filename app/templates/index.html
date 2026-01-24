@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>✅ VOCAB-TRAINER LÄUFT!</h1>
+{% for lang in lang_pairs %}
+<a href='/test/{{ lang }}'>{{ lang.split("-")[1] | capitalize }} {{ t.title }}</a><br>
+{% endfor %}
+<a href='/admin'>Admin (CSV-Import)</a>
+{% endblock %}
