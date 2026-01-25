@@ -25,7 +25,7 @@ from werkzeug.security import generate_password_hash
 
 
 
-__VERSION__ = "0.1.102"
+__VERSION__ = "0.1.104"
 #
 #init logging
 LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO').upper()
