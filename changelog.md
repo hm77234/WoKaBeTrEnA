@@ -1,3 +1,9 @@
+# app.py 0.1.105
+* ADD simple Dockerfile
+
+# app.py 0.1.104
+* corrections in readme
+
 # app.py 0.1.103
 * ADD information for vocable
 * ADD knowledgbase (choose poor, medium, strong) vocable
@@ -5,7 +11,7 @@
 * edit/add informations to existing vocables
 
 # app.py 0.1.102
- * BUGFIX foreign languages
+* BUGFIX foreign languages
 
 # app.py 0.1.100
  * add passwordchange first login with blueprint

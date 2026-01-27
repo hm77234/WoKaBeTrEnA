@@ -3,17 +3,22 @@
 ### progres
 
 ### knwon
+* stats 150 % error
  
 ## new feature list
 ### progres
  * TLS
- * add simple Dockerfile (based on a slim distro)
-
+ 
 ### near
- * personal stats
- * mfa admins
+ * trainingsgroups
+ * stylesheets
+ * stats
+    * session
+    * user per language pair stats
+
 
 ### far
  * postgres
  * speaking / listening support
  * declinations
+* mfa admins

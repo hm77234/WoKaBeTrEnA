@@ -1,45 +1,114 @@
-# Simple multilingual vocabletrainer
+# WoKaBeTrEnA  
 
-Easy Vocable- and Phrasetrainer for different languages. All translations except german are done by KI, so sorry for errors ;)
+**Simple multilingual vocabulary and phrase trainer for different languages.**
 
-# First steps
-* clone the repo
-* set ENV MUTTERLANG to your mutter language, default is deutsch ("german"). Valid default MUTTERLANG are deutsch, espanol, english and italiano
-* go to the admin page and reset pairs, this will build your langugage pairs
-* import your first csv into the trainer, examples are in "example" folder.
-* optional: set ENV DEBUGLEVEL=debug or one of warning, error or info (default)
-* run uv run uvicorn asgi:asgi_app --reload 
+[ [
 
-If you want to use it with podman (i expect docker also) check the install section.
+## 🚀 Quick Start
 
-# add a mutter language
- add a dictonary in translation.py with your values. the key has to be the new mutter language.
+1. **Clone**
+   ```bash
+   git clone https://github.com/hm77234/WoKaBeTrEnA.git && cd WoKaBeTrEnA.git
+   ```
 
-# add a foreign training language
-  add a language in mutterlang to the list with key 'foreigns' in translations dict.
-  Example Mutterlang German: 'foreigns': ['spanisch', 'englisch', 'italienisch', 'französisch' ],
+2. **Virtual Environment**
+   ```bash
+   python -m venv .venv && source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
 
-# TLS
- Put your Certificates in a folder named certs. 
+3. **Configure** (optional)
+   ```bash
+   export MUTTERLANG=deutsch  # deutsch, espanol, english, italiano
+   export DEBUGLEVEL=debug    # debug, info, warning, error
+   ```
 
-# License
+4. **Run Development Server**
+   ```bash
+   cd app
+   uv run uvicorn asgi:asgi_app --reload --host 0.0.0.0 --port 8000
+   ```
 
- mit
+5. **Admin Setup**
+   - Open [http://localhost:8000/admin](http://localhost:8000/admin)
+   - Click **Reset Pairs** to create language pairs
+   - Import CSV from `examples/` folder
 
-# install
+## 📦 Production with Podman
 
-## slim
+### Create Persistent Storage
+```bash
+podman volume create trainerdata
+```
 
-   follow
+### Slim Image (Recommended)
 
-## distroless (experimentel)
+**Non-TLS:**
+```bash
+podman build -t wokabetrena .
+podman run -d --name trainer -p 8000:8000 -v trainer/app/instance --replace wokabetrena
+```
 
-Tested with mac/arm64. Check Dockerfile_distroless for amd options
+**TLS:**
+```bash
+podman build -t wokabetrena -f Dockerfile_TLS .
+podman run -d --name trainer \
+  -v ./your_certs/yourcert.pem:/app/certs/certs.pem \
+  -v ./your_certs/yourkey.pem:/app/certs/key.pem \
+  -p 8443:8443 -v trainer/app/instance \
+  --replace wokabetrena
+```
 
-* podman build --platform linux/arm64 -t trainer -f Dockerfile_distroless .        
-* podman volume create trainer-data
-* podman run -d \
-  --name trainer \
-  -p 8000:8000 \
-  -v trainer-/app/instance \
-  trainer
+### Distroless (Experimental)
+```bash
+podman build --platform linux/arm64 -t trainer -f Dockerfile_distroless .
+podman run -d --name trainer -p 8000:8000 -v trainer/app/instance trainer
+```
+
+## 🌍 Adding Languages
+
+### New Native Language
+Add entry to `app/translation.py`:
+```python
+'polski': {
+    'native_name': 'Polski',
+    'foreigns': ['deutsch', 'english']
+    ...
+}
+```
+
+### New Foreign Language
+Add to existing `MUTTERLANG.foreigns` list:
+```python
+'foreigns': ['spanisch', 'englisch', 'italienisch', 'französisch', 'polski'],
+```
+
+## 📊 Features
+
+- ✅ **Multilingual**: German, Spanish, English, Italian (+ easy extension)
+- ✅ **CSV Import**: Bulk vocabulary upload
+- ✅ **Stats**: Personal progress tracking
+- ✅ **Admin Panel**: Reset/manage pairs
+- ✅ **TLS Ready**: Production HTTPS
+- ✅ **Podman Optimized**: Slim + Distroless images
+
+## 🔧 Stats Available
+
+| Stat | Description |
+|------|-------------|
+| Overall Word Stats | Total words by language pair |
+| Personal Stats | Success rates (strong/medium/weak) |
+
+## ⚠️ Notes
+
+- Hobby project – some comments still in German
+- Use **Releases** for stability
+- Non-German translations by AI (may contain errors)
+- Tested on macOS/arm64. Linux/amd64 & windows will follow
+- look at todo.md for the next features
+
+## 📄 License
+
+[MIT](LICENSE) © WoKaBeTrEnA
+
+
