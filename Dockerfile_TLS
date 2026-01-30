@@ -1,0 +1,45 @@
+# === Stage 1: Builder ===
+FROM python:3.13-slim AS builder
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Install build deps only in builder (optional, e.g. gcc, libpq-dev, etc.)
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#     build-essential \
+#  && rm -rf /var/lib/apt/lists/*
+
+# Create virtualenv and install requirements
+COPY requirements.txt .
+RUN python -m venv /venv \
+ && /venv/bin/pip install --no-cache-dir -U pip \
+ && /venv/bin/pip install --no-cache-dir -r requirements.txt
+
+# Copy application source into builder
+COPY /app /app
+
+# === Stage 2: Runtime (slim) ===
+FROM python:3.13-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/venv/bin:${PATH}"
+
+WORKDIR /app
+
+RUN mkdir -p /app/instance /app/certs && \
+    chown -R 1000:1000 /app
+
+COPY --from=builder --chown=1000:1000 /venv /venv
+COPY --from=builder --chown=1000:1000 /app /app
+
+RUN groupadd -g 1000 appgroup && \
+    useradd -u 1000 -g appgroup -m appuser
+
+USER 1000:1000
+VOLUME ["/app/instance"]
+
+# Adjust to your actual entrypoint/module
+CMD ["python", "-m", "uvicorn", "asgi:asgi_app", "--host", "0.0.0.0", "--port", "8443", "--ssl-certfile=/app/certs/certs.pem", "--ssl-keyfile=/app/certs/key.pem"]

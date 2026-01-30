@@ -2,23 +2,28 @@
 ## BUGS
 ### progres
 
-### knwon
-* stats 150 % error
  
+### knwon
+
 ## new feature list
 ### progres
- * TLS
+ * multiple groups for on word
+ * edit groups and containig word
+ * stylesheets
+ * better foreigns
+
  
 ### near
- * trainingsgroups
- * stylesheets
+ * lock students to special trainingsgroups
+
  * stats
     * session
     * user per language pair stats
 
 
 ### far
- * postgres
- * speaking / listening support
- * declinations
+* postgres
+* speaking / listening support
+* declinations
 * mfa admins
+* not the same password

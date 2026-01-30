@@ -4,11 +4,29 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from flask_login import UserMixin
 from foreigns.translation import TRANSLATIONS
 
-__VERSION__ = "0.1.104"
+__VERSION__ = "0.1.105"
 
 db = SQLAlchemy()
 
+class TrainingGroup(db.Model):
+    __tablename__ = 'training_group' 
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    description = db.Column(db.String(255))
 
+    # NUR HIER: backref erstellt Word.training_groups automatisch
+    words = db.relationship(
+        "Word", 
+        secondary="word_training_group", 
+        back_populates="training_groups"
+    )
+
+class WordTrainingGroup(db.Model):
+    __tablename__ = "word_training_group"
+    word_id = db.Column(db.Integer, db.ForeignKey("word.id"), primary_key=True)
+    training_group_id = db.Column(db.Integer, db.ForeignKey("training_group.id"), primary_key=True)
+    
+    
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True)
@@ -30,9 +48,10 @@ class User(UserMixin, db.Model):
     def score(cls):
         return (cls.checks_correct + 0.5 * cls.checks_almost) / (cls.checks_total + 0.001)
     
-    @property
+    @hybrid_property
     def score_pct(self):
-        return self.score * 100
+        raw = (self.checks_correct + 0.5 * self.checks_almost) / max(1, self.checks_total)
+        return min(100.0, raw * 100)
     
     @property
     def is_admin(self):
@@ -96,9 +115,13 @@ class Word(db.Model):
     checks_total = db.Column(db.Integer, default=0)
     checks_correct = db.Column(db.Integer, default=0)
     checks_almost = db.Column(db.Integer, default=0)
+ 
+    training_groups = db.relationship(
+        "TrainingGroup", 
+        secondary="word_training_group", 
+        back_populates="words"
+    )
     
-
-
     @hybrid_property
     def score(self):
         if self.checks_total == 0:
@@ -110,6 +133,7 @@ class Word(db.Model):
         return (cls.checks_correct + 0.5 * cls.checks_almost) / (cls.checks_total + 0.001)
     
     # Für Template (float)
-    @property
+    @hybrid_property
     def score_pct(self):
-        return self.score * 100
+        raw = (self.checks_correct + 0.5 * self.checks_almost) / max(1, self.checks_total)
+        return min(100.0, raw * 100)

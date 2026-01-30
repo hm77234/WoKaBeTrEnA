@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>✅ VOCAB-TRAINER LÄUFT!</h1>
+<h1>{{ icons['success'] }} VOCAB-TRAINER LÄUFT!</h1>
 {% for lang in lang_pairs %}
 <a href='/test/{{ lang }}'>{{ lang.split("-")[1] | capitalize }} {{ t.title }}</a><br>
 {% endfor %}

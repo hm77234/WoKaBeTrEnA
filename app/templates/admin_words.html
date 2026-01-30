@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>📚 {{ pair.name_title }} ({{ words|length }})</h1>
+<h1>{{ icons['words'] }} {{ pair.name_title }} ({{ words|length }})</h1>
 
-<!-- Suchfeld -->
+<!-- Searchfield -->
 <div style="margin-bottom:20px;">
     <form method="GET" style="display:flex; gap:10px;">
         <input 
@@ -15,14 +15,14 @@
         <button type="submit" style="padding:10px 20px;">🔍</button>
         {% if q %}
             <a href="?{{ url_for('admin_words', pair_name=pair.name) }}" 
-               style="padding:10px 20px; background:#6c757d; color:white;">🗑️ Reset</a>
+               style="padding:10px 20px; background:#6c757d; color:white;">{{ icons['delete'] }} Reset</a>
         {% endif %}
     </form>
     <div style="color:#666;">
         {% if q %}
-            {{ words|length }} Ergebnisse für "{{ q }}"
+            {{ words|length }} {{ t['result_for']}} "{{ q }}"
         {% else %}
-            Alle {{ words|length }} Vokabeln
+        {{ t['allwords']}} {{ words|length }} 
         {% endif %}
     </div>
 </div>
@@ -31,11 +31,11 @@
 <table>
     <thead>
         <tr>
-            <th>Mutter</th>
-            <th>Fremd</th>
-            <th>Info</th>
-            <th>Score</th>
-            <th>Aktion</th>
+            <th>{{ t['mutter_label'] }}</th>
+            <th>{{ t['foreign_language'] }}</th>
+            <th>{{ t['info'] }}</th>
+            <th>{{ t['score_label'] }}</th>
+            <th>{{ t['action_label'] }}</th>
         </tr>
     </thead>
     <tbody>
@@ -50,8 +50,8 @@
             <td class="info-cell">{{ word.info or '' }}</td>
             <td class="score-cell">{{ word.score_pct }}%</td>
             <td class="action-cell">    
-                <button class="edit-btn">✏️</button>
-                <button class="delete-btn" data-word-id="{{ word.id }}" data-mutter="{{ word.mutter_word }}">🗑️</button>
+                <button class="edit-btn">{{ icons['edit'] }}</button>
+                <button class="delete-btn" data-word-id="{{ word.id }}" data-mutter="{{ word.mutter_word }}">{{ icons['delete'] }}</button>
             </td>
         </tr>
         {% endfor %}
@@ -60,7 +60,7 @@
 
 
 <script>
-// 🔥 CSRF Token
+// CSRF Token
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
                   document.getElementById('csrf_token')?.value ||
                   '';
@@ -74,7 +74,7 @@ function showNotification(message) {
     setTimeout(() => notif.remove(), 3000);
 }
 
-// Delete Word (bleibt unverändert)
+// Delete Word 
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('delete-btn')) {
         const wordId = e.target.dataset.wordId;
@@ -109,12 +109,12 @@ function deleteWord(wordId, origMutter) {
     });
 }
 
-// 🔥 FIX: Edit Row - KEIN automatisches Save beim Blur
+// FIX: Edit Row - no automatic Save for Blur
 function editRow(wordId) {
     const row = document.querySelector(`tr[data-word-id="${wordId}"]`);
     if (!row) return;
     
-    // Speichere original values
+    // save original values
     const origMutter = row.dataset.mutter || row.querySelector('.mutter-cell').textContent.trim();
     const origForeign = row.dataset.foreign || row.querySelector('.foreign-cell').textContent.trim();
     const origInfo = row.dataset.info || row.querySelector('.info-cell').textContent.trim();
@@ -127,16 +127,16 @@ function editRow(wordId) {
     // Action buttons
     row.querySelector('.action-cell').innerHTML = `
         <button onclick="saveRow(${wordId})" class="save-btn">💾</button>
-        <button onclick="cancelEdit(${wordId})" class="cancel-btn">❌</button>
+        <button onclick="cancelEdit(${wordId})" class="cancel-btn">{{ icons['error'] }}</button>
     `;
     
-    // 🔥 FIX: Event-Listener NACHDEM Inputs erstellt wurden + KEIN BLUR!
+    // FIX: Event-Listener after Inputs + No BLUR!
     const inputs = row.querySelectorAll('.edit-input');
     inputs.forEach(input => {
         input.addEventListener('keypress', e => { 
             if (e.key === 'Enter') saveRow(wordId); 
         });
-        // 🔥 KEIN BLUR mehr - nur Enter oder Buttons!
+        // no BLUR - only Enter or Buttons!
     });
     
     // Focus first input
@@ -144,7 +144,7 @@ function editRow(wordId) {
     inputs[0].select();
 }
 
-// 🔥 FIX: Save Row - unverändert
+//  FIX: Save Row 
 async function saveRow(wordId) {
     const row = document.querySelector(`tr[data-word-id="${wordId}"]`);
     const mutterInput = row.querySelector('.mutter-cell input');
@@ -186,8 +186,8 @@ async function saveRow(wordId) {
             
             // Reset action buttons MIT edit-btn
             row.querySelector('.action-cell').innerHTML = 
-                `<button class="edit-btn">✏️</button>
-                 <button class="delete-btn" data-word-id="${wordId}" data-mutter="${data.word.mutter_word}">🗑️</button>`;
+                `<button class="edit-btn">{{ icons['edit'] }}</button>
+                 <button class="delete-btn" data-word-id="${wordId}" data-mutter="${data.word.mutter_word}">{{ icons['delete'] }}</button>`;
             
             // Update data-* attributes
             row.dataset.mutter = data.word.mutter_word;
@@ -204,7 +204,7 @@ async function saveRow(wordId) {
     }
 }
 
-// 🔥 FIX: Cancel Edit - KEINE Parameter mehr nötig
+// FIX: Cancel Edit - no paramter
 function cancelEdit(wordId) {
     const row = document.querySelector(`tr[data-word-id="${wordId}"]`);
     // Reset aus data-* attributes (sicherer)
@@ -214,8 +214,8 @@ function cancelEdit(wordId) {
     
     // Reset action buttons
     row.querySelector('.action-cell').innerHTML = `
-        <button class="edit-btn">✏️</button>
-        <button class="delete-btn" data-word-id="${wordId}" data-mutter="${row.dataset.mutter}">🗑️</button>
+        <button class="edit-btn">{{ icons['edit'] }}</button>
+        <button class="delete-btn" data-word-id="${wordId}" data-mutter="${row.dataset.mutter}">{{ icons['delete'] }}</button>
     `;
 }
 

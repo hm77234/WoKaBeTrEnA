@@ -1,5 +1,11 @@
 # app.py 0.1.105
+* ADD TLS
 * ADD simple Dockerfile
+* ADD Trainingsgroup and stats
+* ADD reset Trainigsgroup
+* ADD better icon handling
+* ADD more language fields
+
 
 # app.py 0.1.104
 * corrections in readme

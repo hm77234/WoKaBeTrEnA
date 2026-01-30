@@ -1,7 +1,48 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1>🧠 {{ t['test_title'] }}: {{ pair.name_title }}</h1>
 
+{% if not session.test_group %}  {# First visit: Show SELECT #}
+  <h1>{{ icons['test'] }} {{ t['test_title'] }}: {{ pair.name_title }} 
+    {% if selected_group != 'all' %}- {{ selected_group.title() }}{% endif %}
+    ({{ status }})
+</h1>
+
+<p>test</p>
+  <form method="POST" style="background:#f8f9fa; padding:30px; border-radius:12px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <h3>{{ icons['rocket'] }} Test starten</h3>
+        
+        <div style="margin:20px 0;">
+            <label style="display:block; margin-bottom:10px; font-weight:bold;">
+                {{ icons['group'] }} {{ t['group'] }}:
+                <select name="group" required style="width:100%; padding:10px;">
+                    {% for g in groups %}
+                    <option value="{{ g }}"  {{ 'selected' if k==selected_group }}>{{ icons['test'] + ' ' + t['allwords'] if g=='all' else g.title() }}</option>
+                    {% endfor %}
+                </select>
+                
+            </label>
+            
+        </div>
+        <div style="margin:20px 0;">
+            <label style="display:block; margin-bottom:10px; font-weight:bold;">
+                {{ icons['stats'] }} {{ t['knowledege_label'] }}:
+                <select name="knowledgebase" required style="width:100%; padding:10px;">
+                    {% for k,v in knowledgebase_dict.items() %}
+                    <option value="{{ k }}" {{ 'selected' if k==knowledgebase }}>
+                        {{ v.status }}
+                    </option>
+                    {% endfor %}
+                        </select>
+            </label>
+        </div>
+        
+        <button type="submit" class="btn-student" style="width:100%; padding:15px; font-size:1.2em;">
+            {{ icons['target'] }} Test starten!
+        </button>
+    </form>
+{% else %}  
+<h1>{{ icons['test'] }} {{ t['test_title'] }}: {{ pair.name_title }}</h1>
 {% if result %}
   <div class="flash">
     {{ result }}
@@ -11,11 +52,42 @@
     <p>{{ direction }}: <strong>{{ prompt_word }}</strong> → {{ target_word }}</p>
   {% endif %}
 {% endif %}
+<form method="POST" style="background:#f0f8ff; padding:15px; margin-bottom:20px; border-radius:8px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    
+    <label>{{ icons['group'] }} {{ t['group'] }}:
+        <select name="group" >
+            
+            {% if groups %}
+                {% for g in groups %}
+                <option value="{{ g }}" {{ 'selected' if g==selected_group }}>{{ g.title() }}</option>
+                {% endfor %}
+            {% else %}
+                <option value="all" {{ 'selected' if selected_group=='all' }}>{{ icons['test'] }} Alle</option>
+            {% endif %}
+        </select>
+    </label>
+    
+    <label style="margin-left:20px;">{{ icons['stats'] }} {{ t['knowledege_label'] }}:
+        <select name="knowledgebase">
+            {% for k,v in knowledgebase_dict.items() %}
+            <option value="{{ k }}" {{ 'selected' if k==knowledgebase }}>
+                {{ v.status }}
+            </option>
+            {% endfor %}
+        </select>
+    </label>
+    <button type="submit" class="btn-student">
+        {{ icons['change'] }} {{ t['change'] if 'check' in t else 'Change' }}
+    </button>
+</form>
 
 <form method="POST">
+
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="word_id" value="{{ word.id }}">
-
+    <input type="hidden" name="knowledgebase" value="{{ knowledgebase }}">
+    <input type="hidden" name="group" value="{{ selected_group }}">
     <div style="font-size:2em; margin:20px 0;">
         {% if d == 'A→B' %}
             {{ word.mutter_word }} → ?
@@ -56,29 +128,17 @@
             random
         </label>
     </div>
-    <div>
-        {% for k,v in knowledgebase_dict.items() %}
-        <label>
-           {% if v["status"] == status %}
-                <input type="radio" name="knowledgebase" value="{{ k }}" checked>
-                {{ v["status"] }} 
-            {% else %}
-                <input type="radio" name="knowledgebase" value="{{ k }}" >
-                {{ v["status"] }} 
-            {% endif %}
-        </label>
-        {% endfor %}
-    </div>
+    
     <button type="submit" class="btn-student">
-        ✅ {{ t['check'] if 'check' in t else 'Prüfen' }}
+        {{ icons['success'] }} {{ t['check'] if 'check' in t else 'Prüfen' }}
     </button>
 </form>
+{% endif %}
+
 <br>
 <div>
-    <a href="/stats" class="btn-student">📊 {{ t['stats_title'] }}</a> Statistik
+    <a href="/stats" class="btn-student">{{ icons['stats'] }} {{ t['stats_title'] }}</a> Statistik
 </div>
 
-<div>
-    <p>{{ t['difficulty'] }}: {{ difficulty }} - limitiert auf 50 Vokabel außer "all"</p>
-</div>
+
 {% endblock %}

@@ -2,7 +2,6 @@
 
 **Simple multilingual vocabulary and phrase trainer for different languages.**
 
-[ [
 
 ## 🚀 Quick Start
 
@@ -19,8 +18,8 @@
 
 3. **Configure** (optional)
    ```bash
-   export MUTTERLANG=deutsch  # deutsch, espanol, english, italiano
-   export DEBUGLEVEL=debug    # debug, info, warning, error
+   export MUTTERLANG=deutsch  # deutsch(default), espanol, english, italiano
+   export DEBUGLEVEL=debug    # debug, info(default), warning, error
    ```
 
 4. **Run Development Server**
@@ -30,6 +29,7 @@
    ```
 
 5. **Admin Setup**
+   - Student: student/student123 Admin: admin/admin123
    - Open [http://localhost:8000/admin](http://localhost:8000/admin)
    - Click **Reset Pairs** to create language pairs
    - Import CSV from `examples/` folder
@@ -82,6 +82,25 @@ Add to existing `MUTTERLANG.foreigns` list:
 ```python
 'foreigns': ['spanisch', 'englisch', 'italienisch', 'französisch', 'polski'],
 ```
+# Vocable import
+Load csv-Files
+
+## csv format 
+### header (first row)
+mutter_word,foreign_word,foreign_lang,info,group
+
+ - mutter_word: the word in your native langugage
+ - foreign_word: the word in the foreign langugage
+ - foreign_lang: the foreign language
+ - info: informations, which will be shown during trainings
+ - group: trainingsgroup
+
+### example english-german
+the food,das Essen,german,,Food
+
+
+# Trainingsgroups
+There are defaultgroups. New groups are created during upload.
 
 ## 📊 Features
 
@@ -106,6 +125,10 @@ Add to existing `MUTTERLANG.foreigns` list:
 - Non-German translations by AI (may contain errors)
 - Tested on macOS/arm64. Linux/amd64 & windows will follow
 - look at todo.md for the next features
+
+# Limitations
+
+- only one Group for each word
 
 ## 📄 License
 

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ t.admin_groups_title|default('Gruppen') }}</h1>
+<table>
+<tr><th>{{ t.group }}</th><th>{{ t.words }}</th><th>⌀ {{ t.average_score }}</th><th>{{ t.correct }} %</th></tr>
+{% for row in group_stats %}
+<tr>
+  <td>{{ row.group }}</td>
+  <td>{{ row.words_count }}</td>
+  <td>{{ row.score_pct }}%</td>  
+  <td>{{ row.correct_pct }}%</td>
+</tr>
+{% endfor %}
+</table>
+
+<h3>{{ t.students_title|default('Studenten') }}</h3>
+<ul>{% for s in students %}<li>{{ s.username }} ({{ s.score_pct }}%)</li>{% endfor %}</ul>
+
+<a href="/admin">{{ t.back }}</a>
+{% endblock %}

@@ -1,13 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
 <div style="max-width:900px; margin:0 auto;">
-    <!-- Muttersprache + Wechsel -->
+    <!-- mutterlang + init -->
     <div style="background:#e3f2fd; padding:20px; border-radius:12px; margin-bottom:30px;">
         <h2>{{ t.admin }}</h2>
         <div style="display:flex; align-items:center; gap:15px;">
             <label>{{ t.mutter_label }}:</label>
-            <strong style="font-size:1.2em;">{{ mutter.title() }}</strong>
-        
+            <strong style="font-size:1.2em;">{{ mutter.title() }}</strong>    
             <a href="/admin/reset-pairs" style="background:#FF9800; color:white; padding:8px 16px; text-decoration:none; border-radius:6px;">
                 🔄 {{ t.reset or 'Reset Pairs' }}
             </a>
@@ -23,7 +22,7 @@
             <div style="color:#666; margin-bottom:15px;">{{ pair.name }}</div>
             <div>
                 <a href="/admin/words/{{ pair.name }}" style="background:#4CAF50; color:white; padding:10px 20px; text-decoration:none; border-radius:6px; margin-right:10px;">
-                    📚 {{ t.words or 'Words' }}
+                    {{ icons['words'] }} {{ t.words or 'Words' }}
                 </a>
                 <a href="/test/{{ pair.name }}" style="background:#2196F3; color:white; padding:10px 20px; text-decoration:none; border-radius:6px;">
                     🧪 {{ t.test or 'Test' }}

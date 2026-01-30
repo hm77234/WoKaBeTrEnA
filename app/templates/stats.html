@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1>📊 {{ t['stats_title'] }}</h1>
+<h1>{{ icons['stats'] }} {{ t['stats'] }}</h1>
 
 <table style="width:100%; border-collapse:collapse;">
 <thead>
@@ -35,8 +35,26 @@
 </tbody>
 </table>
 
+
+<h2>{{ t['mygroups'] }}</h2>
+<table>{% for gs in group_stats %}
+<tr><td>{{ gs.group }}</td><td>{{ gs.words_count }}</td><td>{{ (gs.avg_score*100)|round(1) }}%</td></tr>
+{% endfor %}</table>
+</table>
+
+
+<h2>{{ t['language_pairs'] }}</h2>
+<table>{% for ls in lang_stats_n %}
+<tr><td>{{ ls.mutter }}→{{ ls.foreign }}</td><td>{{ ls.total_words }}</td><td>{{ ls.total_tests }}</td></tr>
+{% endfor %}</table>
+
+</table>
+<h2>{{ t['return_tests'] }}</h2>
+{% for ls in lang_stats_n %}
+<a href="/test/{{ ls.mutter }}-{{ ls.foreign }}">{{ icons['test'] }} {{ ls.mutter }}→{{ ls.foreign }}</a><br>
+{% endfor %}
 <p style="margin-top:20px;">
-    <a href="/test/{{ mutter }}-spanisch" class="btn-student">🧠 {{ t['test_title'] or 'Test' }}</a>
-    <a href="/admin" class="btn-admin">⚙️ {{ t['admin'] or 'Admin' }}</a>
+    <a href="/test/{{ mutter }}-spanisch" class="btn-student">{{ icons['test'] }} {{ t['test_title'] or 'Test' }}</a>
+    <a href="/admin" class="btn-admin">{{ icons['admin'] }} {{ t['admin'] or 'Admin' }}</a>
 </p>
 {% endblock %}

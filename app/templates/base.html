@@ -16,28 +16,37 @@
     </style>
 </head>
 <body>
-     <!-- ✅ Hidden input for legacy JS - matches your getElementById('csrf_token') -->
-    <input type="hidden" id="csrf_token" value="{{ csrf_token() }}">
+
+  
     
     <!-- Your nav and content here -->
 
     <!-- Navigation -->
  <nav>
     {% if current_user.is_authenticated %}
-        Hello {{ current_user.username }} {% if current_user.is_admin %}(👑){% endif %}
-        <a href="{{ url_for('logout') }}">{{ t.logout or 'Logout' }}</a> - <a href="{{ url_for('change_pw.change_password') }}">Change Password</a>
+        Hello {{ current_user.username }} 
+        {% if current_user.is_admin %}
+            ({{ icons['is_admin']}})
+        {% elif current_user.is_student%}
+            ({{ icons['is_student']}})
+        {% else %}
+            ({{ icons['unknown']}})
+        {% endif %}
+        - {{ icons['logout'] }} <a href="{{ url_for('logout') }}">{{ t.logout or 'Logout' }}</a> - {{ icons['change_password'] }} <a href="{{ url_for('change_pw.change_password') }}">Change Password</a>
     {% else %}
-        <a href="{{ url_for('login') }}">{{ t.login }}</a>
+        - <a href="{{ url_for('login') }}">{{ t.login }}</a>
     {% endif %}
+    -{{ icons['home'] }} <a href="/">{{ t['home'] or 'Home' }}</a>
+    -{{ icons['reset_testgroup'] }} <a href="/reset_test_group">{{ t['reset_testgroup'] or 'Reset testgroup' }}</a>
 
 </nav>
 
     <!-- Admin-Only Links -->
     {% if current_user.is_admin %}
     <div style="background:#e7f3ff; padding:10px; border-radius:4px; margin-bottom:20px;">
-        <a href="/admin" class="btn-admin">⚙️ Dashboard</a>
-        <a href="/admin/users" class="btn-admin">👥 User</a>
-        <a href="/admin/reset-pairs" class="btn-admin">🔄 Pairs Reset</a>
+        <a href="/admin" class="btn-admin"> Dashboard</a>
+        <a href="/admin/users" class="btn-admin">{{ icons['students'] }} User</a>
+        <a href="/admin/groups_stats" class="btn-admin">{{ icons['admin_groups'] }} Group Stats</a>
     </div>
     {% endif %}
 
@@ -45,7 +54,7 @@
     <!-- Student-Only Links -->
     {% if is_student() %}
         <div style="background:#e8f5e8; padding:10px; border-radius:4px; margin-bottom:20px;">
-            <a href="{{ url_for('stats') }}" class="btn-student">📊 Meine Stats</a>
+            <a href="{{ url_for('stats') }}" class="btn-student">{{ icons['stats'] }} Meine Stats</a>
         </div>
     {% endif %}
 
