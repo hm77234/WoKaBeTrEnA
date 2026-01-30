@@ -1,0 +1,14 @@
+certs
+.git
+.DS_Store
+__pychache__
+
+.python-version
+.venv
+.qodo
+uv.lock
+*.toml
+*.flag
+app/instance/*
+
+
