@@ -1,0 +1,30 @@
+[project]
+name = "vocabeltrainer"
+version = "0.1.113"
+description = "simple multilingual vocable trainer"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "asgiref>=3.11.0",
+    "coloredlogs>=15.0.1",
+    "flask>=3.1.2",
+    "flask-login>=0.6.3",
+    "flask-sqlalchemy>=3.1.1",
+    "flask-wtf>=1.2.2",
+    "uvicorn>=0.40.0",
+    "werkzeug>=3.1.5",
+]
+[tool.bumpver]
+current_version = "0.1.113"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit = true                    # Auto-commit
+commit_message = 'Latest Version {new_version}'
+tag = true                       # Auto-tag
+tag_name = "v{version}"
+push = true                     #  auto-push
+
+[tool.bumpver.file_patterns]
+"app/app.py" = ["__VERSION__ = \"{version}\""]
+"app/models.py" = ["__VERSION__ = \"{version}\""]
+"pyproject.toml" = ["version = \"{version}\""]
+"changelog.md" = ["# app.py new {version}"]
