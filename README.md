@@ -20,6 +20,8 @@
    ```bash
    export MUTTERLANG=deutsch  # deutsch(default), espanol, english, italiano
    export DEBUGLEVEL=debug    # debug, info(default), warning, error
+   export VT_DB_PATH='/data/your/db/storage/sqlite.db' # default: './instance/vocab.db' This directory stores backups also!
+   export MAX_BACKUP=10 # default:10 delete backups if we have mor then MAX_BACKUPS
    ```
 
 4. **Run Development Server**
@@ -42,7 +44,7 @@ podman volume create trainerdata
 ```
 
 ### Slim Image (Recommended)
-
+This commands are examples, check your volumes for the correct startup (expample: -v trainerdata:/app/instance:Z ).
 **Non-TLS:**
 ```bash
 podman build -t wokabetrena .
@@ -85,18 +87,9 @@ Add to existing `MUTTERLANG.foreigns` list:
 # Vocable import
 Load csv-Files
 
-## csv format 
-### header (first row)
-mutter_word,foreign_word,foreign_lang,info,group
 
- - mutter_word: the word in your native langugage
- - foreign_word: the word in the foreign langugage
- - foreign_lang: the foreign language
- - info: informations, which will be shown during trainings
- - group: trainingsgroup
-
-### example english-german
-the food,das Essen,german,,Food
+## csv formats
+check docs/csvformat.md
 
 
 # Trainingsgroups
@@ -110,6 +103,7 @@ There are defaultgroups. New groups are created during upload.
 - ✅ **Admin Panel**: Reset/manage pairs
 - ✅ **TLS Ready**: Production HTTPS
 - ✅ **Podman Optimized**: Slim + Distroless images
+- ✅ **Declinations for verbs**: check docs/tenses.md
 
 ## 🔧 Stats Available
 
@@ -128,9 +122,21 @@ There are defaultgroups. New groups are created during upload.
 
 # Limitations
 
-- only one Group for each word
 
-## 📄 License
+# Restore and admin passwords
+
+⚠️ Restore Warning: 
+Restoring a backup overwrites ALL user passwords and settings. 
+Always create a fresh backup of your current DB first!
+
+🔧 Selective Restore: its possible to restore all table except the user table. check the restore form for the radio button. 
+
+🔧 Admin Recovery: 
+Check the maintenance/ directory for the admin user recovery script.
+
+
+
+# 📄 License
 
 [MIT](LICENSE) © WoKaBeTrEnA
 

@@ -1,29 +1,25 @@
 # TODO
 ## BUGS
 ### progres
-
+ * first declination starts always with random tense and all group, should be set befor test
  
-### knwon
+### known
 
 ## new feature list
 ### progres
- * multiple groups for on word
- * edit groups and containig word
  * stylesheets
- * better foreigns
 
- 
 ### near
+ * edit groups and containig word
+ * better foreigns
  * lock students to special trainingsgroups
-
  * stats
     * session
     * user per language pair stats
 
-
 ### far
 * postgres
 * speaking / listening support
-* declinations
+
 * mfa admins
-* not the same password
+* password policies like not the same password
