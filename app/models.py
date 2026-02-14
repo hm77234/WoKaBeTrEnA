@@ -1,7 +1,7 @@
 # models.py - Updated with Multi-Group support (English comments)
 # 
 
-__VERSION__ = "0.1.110"
+__VERSION__ = "0.1.115"
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.hybrid import hybrid_property
