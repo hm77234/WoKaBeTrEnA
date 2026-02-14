@@ -1,4 +1,4 @@
-# app.py new 0.1.111
+# app.py new 0.1.112
 * add declinations
 * more stylesheet and layout
 

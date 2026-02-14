@@ -4,7 +4,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from flask_login import UserMixin
 from foreigns.translation import TRANSLATIONS
 
-__VERSION__ = "0.1.111"
+__VERSION__ = "0.1.112"
 
 db = SQLAlchemy()
 
