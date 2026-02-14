@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="admin-backup">
+    <h2>{{ t.db_backup_title }}</h2>
+    
+    <div class="alert alert-success">
+        <strong> {{ icons.save }} {{ t.db_backup_desc }}</strong><br>
+        <small> {{ t.db_backup_info.format(timestamp=timestamp) | safe }}</small>
+    </div>
+    
+    <h3>{{ t.db_current_data }}:</h3>
+    <table class="table table-bordered">
+        <tr><th>{{ t.user_title }}</th><td>{{ stats.users }}</td></tr>
+        <tr><th>{{ t.words_title }}</th><td>{{ stats.words }}</td></tr>
+        <tr><th>{{ t.pairs_title }}</th><td>{{ stats.pairs }}</td></tr>
+        <tr><th>{{ t.groups_title }}</th><td>{{ stats.groups }}</td></tr>
+    </table>
+    
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-admin">
+            {{ icons.save }} {{ t.save }}
+        </button>
+        <a href="{{ url_for('admin') }}" class="btn btn-admin">
+            {{ icons.cancel }} {{ t.abort }}
+        </a>
+    </form>
+</div>
+{% endblock %}

@@ -1,4 +1,4 @@
-mutter_word,foreign_word,foreign_lang
-la comida,the food,ingles
-el desayuno,the breakfast,ingles
-la comida,the lunch,ingles
+mutter_word,foreign_word,foreign_lang,info,groups
+la comida,the food,ingles,,Comida
+el desayuno,the breakfast,ingles,,Comida
+la comida,the lunch,ingles,,Comida

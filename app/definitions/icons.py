@@ -16,6 +16,10 @@ ICONS = {
     'info': 'ℹ️',
     'edit': '✏️',
     'delete': '🗑️',
+    'alert': '🚨',
+    'cancel': '❌',
+    'save': '💾',
+    'restore':'🔄',
     
     # Groups/Lang
     'group': '📂',
@@ -44,6 +48,9 @@ ICONS = {
     'admin_groups': '📈',
     'students': '👥',
     'stats': '📈',
+    'reset_testgroup': '⏭️',
+    'test': '🧪',
+    'declinationtest': '📖✨',
     
     #roles
     'is_admin': '👑',

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="admin-reset">
+    <h2>{{ icons.delete}} {{  t.db_reset_title }}</h2>
+    
+    <div class="alert alert-danger">
+        <strong>{{ icons.warning }} {{ t.db_warning }}</strong><br>
+        <small>{{ t.db_backup_info.replace('{timestamp}', timestamp) | safe }}</small>
+    </div>
+    
+    <h3>{{ t.db_current_data }}:</h3>
+    <table class="table table-bordered">
+        <tr><th>{{ t.user_title }}</th><td>{{ pre_counts.users }}</td></tr>
+        <tr><th>{{ t.words }}</th><td>{{ pre_counts.words }}</td></tr>
+        <tr><th>{{ t.language_pairs }}</th><td>{{ pre_counts.pairs }}</td></tr>
+        <tr><th>{{ t.admin_groups_title }}</th><td>{{ pre_counts.groups }}</td></tr>
+    </table>
+    
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="confirm" value="yes">
+        <button type="submit" class="btn btn-danger btn-lg" 
+                onclick="return confirm('{{ icons.alert }} {{ t.really_delete }}?\n\n{{ t.no_back }}');">
+            {{ icons.alert }} {{ t.db_reset }}
+        </button>
+        &nbsp;
+        <a href="{{ url_for('admin') }}" class="btn btn-admin">
+            {{ icons.cancel }} {{ t.abort }}
+        </a>
+    </form>
+    
+    <hr><small>{{ t.after_reset }}</small>
+</div>
+{% endblock %}
+
+    

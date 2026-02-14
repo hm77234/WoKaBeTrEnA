@@ -1,4 +1,4 @@
-mutter_word,foreign_word,foreign_lang
-das Essen,la comida,spanisch
-das Frühstück,el desayuno,spanisch
-das Mittagessen,la comida,spanisch
+mutter_word,foreign_word,foreign_lang,info,groups
+das Essen,la comida,spanisch,, "Grundwortschatz"
+das Frühstück,el desayuno,spanisch,,"essen"
+das Mittagessen,la comida,spanisch,,"essen

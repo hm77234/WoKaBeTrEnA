@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>{{ t.no_words_found }}</h1>
+
+{% if knowledgebase_dict is defined %}
 <p>{{ t.no_words_found_in_knowledgebase }}</p>
 <form method="POST">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -21,5 +23,6 @@
         {{ icons['success'] }} change
     </button>
 </form>
+{% endif %}
 <a href='/admin'>Admin (CSV-Import)</a>
 {% endblock %}

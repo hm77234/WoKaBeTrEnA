@@ -1,4 +1,4 @@
-mutter_word,foreign_word,foreign_lang
-la comida,das Essen,aleman
-el desayuno,das Frühstück,aleman
-la comida,das Mittagessen,aleman
+mutter_word,foreign_word,foreign_lang,info,groups
+la comida,das Essen,aleman,,Comida
+el desayuno,das Frühstück,aleman,,Comida
+la comida,das Mittagessen,aleman,,Comida

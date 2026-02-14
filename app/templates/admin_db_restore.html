@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="admin-restore">
+    <h2>{{ icons.restore }}  {{ t.db_restore_title }}</h2>
+    
+    {% if db_exists %}
+    <div class="alert alert-warning">
+        {{ icons.warning }} {{ t.db_restore_warning_live | safe }}
+    </div>
+    {% endif %}
+    
+    {% if backups %}
+    <h3>{{ t.db_available_backups }}:</h3>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <select name="backup_file" class="form-control" required>
+            {% for backup in backups %}
+            <option value="{{ backup }}">{{ backup }} 
+                ({{ backup.split('.')[1] if backup.split('.')[-1] == 'backup' else '' }})
+            </option>
+            {% endfor %}
+        </select>
+        <br>
+        <br>
+        <label>{{ t.selective_backup_label }}: <input type="radio" name="selective_backup_check" value="1"></label>
+        <br>
+        <br>
+        <button type="submit" class="btn btn-admin btn-lg"
+                onclick="return confirm('{{ t.db_restore_confirm }}');">
+            {{ icons.restore }} {{ t.db_restore_button }}
+        </button>
+        <a href="{{ url_for('admin') }}" class="btn btn-admin">
+            {{ icons.cancel }} {{ t.abort }}
+        </a>
+    </form>
+    {% else %}
+    <div class="alert alert-info">
+        {{ t.db_no_backups }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

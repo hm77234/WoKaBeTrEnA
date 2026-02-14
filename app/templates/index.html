@@ -1,8 +1,164 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>{{ icons['success'] }} VOCAB-TRAINER LÄUFT!</h1>
-{% for lang in lang_pairs %}
-<a href='/test/{{ lang }}'>{{ lang.split("-")[1] | capitalize }} {{ t.title }}</a><br>
-{% endfor %}
-<a href='/admin'>Admin (CSV-Import)</a>
+<div class="container-fluid py-5" style="max-width:1400px; margin:auto;">
+    <!-- Hero Header -->
+    <div class="text-center mb-5">
+        <h1 style="font-size:clamp(2rem,5vw,3.5rem); font-weight:700; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin:0;">
+            {{ t.vocabtrainer or 'VOCAB-TRAINER' }}
+        </h1>
+        <p style="color:#64748b; font-size:1.2rem; max-width:600px; margin:12px auto 0;">
+            {{ t.subtitle or 'Lerne Vokabeln & Deklinationen mit interaktiven Tests' }}
+        </p>
+    </div>
+
+    <!-- Sprachpaare Grid -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:24px; margin:40px 0;">
+        {% for lang in lang_pairs %}
+        {% set mutter, foreign = lang.split("-") %}
+        <div style="
+            background:radial-gradient(circle at top right, #f8fafc 0%, #f1f5f9 100%);
+            padding:28px;
+            border-radius:20px;
+            box-shadow:0 20px 60px rgba(0,0,0,0.08);
+            border:1px solid rgba(148,163,184,0.15);
+            transition:all .25s ease;
+            position:relative;
+            overflow:hidden;">
+            
+            <!-- Subtle Deko -->
+            <div style="
+                position:absolute;
+                inset:auto -80px auto auto;
+                width:160px;
+                height:160px;
+                background:radial-gradient(circle,#e2e8f0 0%,transparent 70%);
+                opacity:0.4;">
+            </div>
+
+            <!-- Sprachen Header -->
+            <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px; position:relative; z-index:1;">
+                <div style="font-size:44px; line-height:1;">{{ icons.get('languages','🌍') }}</div>
+                <div>
+                    <div style="font-size:13px; text-transform:uppercase; letter-spacing:0.1em; color:#64748b; margin-bottom:4px;">
+                        {{ mutter.capitalize() }} → {{ foreign.capitalize() }}
+                    </div>
+                    <h3 style="margin:0; color:#1e293b; font-weight:600; font-size:22px;">
+                        {{ pair.frommutternative if pair else lang|title }}
+                    </h3>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                <!-- Vokabel-Test -->
+                <a href="/test/{{ lang }}"
+                   style="
+                       background:linear-gradient(135deg,#3b82f6,#1d4ed8);
+                       color:white;
+                       padding:14px 20px;
+                       border-radius:14px;
+                       text-decoration:none;
+                       text-align:center;
+                       font-weight:500;
+                       box-shadow:0 8px 25px rgba(59,130,246,0.3);
+                       transition:all .2s ease;">
+                    <div style="font-size:22px; margin-bottom:4px;">{{ icons.get('test','🧪') }}</div>
+                    <div style="font-size:13px;">{{ t.vokabeltest or 'Vokabel-Test' }}</div>
+                </a>
+
+                <!-- Deklination-Test (NEU & Hervorgehoben) -->
+                <a href="/testdeclination/{{ lang }}"
+                   style="
+                       background:linear-gradient(135deg,#f59e0b,#d97706);
+                       color:white;
+                       padding:14px 20px;
+                       border-radius:14px;
+                       text-decoration:none;
+                       text-align:center;
+                       font-weight:600;
+                       box-shadow:0 8px 25px rgba(245,158,11,0.35);
+                       position:relative;
+                       transition:all .2s ease;">
+                    <div style="font-size:22px; margin-bottom:4px;">{{ icons.get('declination','📖✨') }}</div>
+                    <div style="font-size:13px;">{{ t.declinationtest or 'Deklination' }}</div>
+                    <!-- Neu-Badge -->
+                    <div style="
+                        position:absolute;
+                        top:-8px;
+                        right:-8px;
+                        background:#ef4444;
+                        color:white;
+                        width:24px;
+                        height:24px;
+                        border-radius:50%;
+                        font-size:10px;
+                        font-weight:700;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;">
+                        NEW
+                    </div>
+                </a>
+            </div>
+
+            <!-- Admin Link (nur für Admins) -->
+            {% if is_admin() %}
+            <div style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(148,163,184,0.2);">
+                <a href="/admin/words/{{ lang }}" style="
+                    color:#64748b;
+                    text-decoration:none;
+                    font-size:13px;
+                    padding:8px 12px;
+                    border-radius:8px;
+                    display:inline-flex;
+                    align-items:center;
+                    gap:6px;
+                    transition:color .2s ease;
+                    border:1px solid transparent;
+                "
+                onmouseover="this.style.color='#1e293b'; this.style.borderColor='#cbd5e1';">
+                    {{ icons.get('edit','✏️') }} {{ t.words or 'Words verwalten' }}
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Admin Quick-Link (zentriert) -->
+    {% if is_admin() %}
+    <div class="text-center mt-5">
+        <a href="/admin" style="
+            background:linear-gradient(135deg,#6b7280,#4b5563);
+            color:white;
+            padding:14px 32px;
+            border-radius:12px;
+            text-decoration:none;
+            font-weight:500;
+            box-shadow:0 8px 25px rgba(107,114,128,0.3);
+            display:inline-flex;
+            align-items:center;
+            gap:10px;
+            transition:all .2s ease;
+            font-size:16px;">
+            {{ icons.get('admin','⚙️') }} {{ t.admin or 'Admin (CSV-Import)' }}
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* Hover Animationen */
+div[style*="transition"] {
+    will-change: transform;
+}
+div[style*="transition"]:hover {
+    transform: translateY(-6px) !important;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.15) !important;
+}
+a[style*="transition"]:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25) !important;
+}
+</style>
 {% endblock %}

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-light">
+    <div class="container mt-5">
+        <div class="full-center bg-light">
+            <div class="card-container">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h2>{{ t.testdeclination or 'Deklinationstest' }}: {{ pair.frommutternative }}</h2>
+                        <small>{{ direction }}</small>
+                    </div>
+                    <div class="card-body">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <form method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                            <!-- Group Dropdown -->
+                            <div class="mb-3">
+                                <label class="form-label">{{ t.group or 'Gruppe' }}</label>
+                                <select name="group" class="form-select" onchange="this.form.submit()">
+                                    {% for g in groups %}
+                                        <option value="{{ g }}" {% if g == selected_group %}selected{% endif %}>{{ g }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Tense Dropdown -->
+                            <div class="mb-3">
+                                <label class="form-label">{{ t.selecttense or 'Zeit wählen' }}</label>
+                                <select name="tense" class="form-select" onchange="this.form.submit()">
+                                    {% for tense in available_tenses %}
+                                        <option value="{{ tense }}" {% if tense == selected_tense %}selected{% endif %}>
+                                            {{ tense_desc.get(tense, {}).get('de', tense) or tense }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Hidden fields except csrf token-->
+                            {% if word %}
+                                <input type="hidden" name="wordid" value="{{ word.id }}">
+                            {% endif %}
+                            <input type="hidden" name="direction" value="{{ direction }}">
+                            <input type="hidden" name="personset" value="{{ random_persons_set }}">
+                            <input type="hidden" name="testtense" value="{{ testtense }}">
+
+                            <!-- Prompt: Grundform -->
+                            {% if prompt_base %}
+                                <div class="alert alert-info text-center fs-3 mb-4 p-4">
+                                    <strong>{{ t.baseform or 'Grundform' }}:</strong> {{ prompt_base }}
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ t.enterform or 'Gib eine Form in der gewählten Zeit ein' }}
+                                    </small>
+                                </div>
+                            {% endif %}
+
+                            <!-- Feedback/Result -->
+                            {% if results %}
+                                <div class="alert {{ 'alert-success' if correct else 'alert-warning' }} mb-4">
+                                    {% if not correct and target_forms %}
+                                        {{ icons.error }} {{ t.wrong }}
+                                        <hr>
+                                        <strong>{{ t.correctforms or 'Korrekte Formen (s1-s3, m1-m3)' }}:</strong>
+                                        <div class="text-left">
+                                            {% for form in results %}
+                                                <div class="col-2">
+                                                   -  <code class="bg-light p-2 d-block">{{ form['result'] }}</code></br>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
+                            <!-- Stats/Word info -->
+                            {% if word %}
+                                <div class="mb-3 p-3 bg-question question">
+                                    
+                                    <strong>{{ t.next_word }}: {{ word.mutter_word }} → {{ word.foreign_word }} </strong>
+                                    <small>
+                                        {% if word.info %}
+                                            <br>{{ t.info or 'Info' }}: {{ word.info }}
+                                        {% endif %}
+                                    </small>
+                                    <hr
+                                    {% if random_persons_set %}
+                                        <br>
+                                        <strong>
+                                            {{ t.askingforpersons }}<br>
+                                            {% for ps in random_persons_set %}
+                                                * {{ t.persons_label[ps] }}<br>
+                                            {% endfor %}
+                                            {{ testtense }}
+                                        </strong>
+                                       
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            <br>    
+                            <!-- Answer Input -->
+                            <div class="mb-4">
+                                <label class="form-label fs-1">{{ t.answer or 'Antwort' }}</label>
+                                <input type="text"
+                                       name="answer"
+                                       class="form-control form-control-lg text-center fs-2 py-4" 
+                                       placeholder="{{ t.enterform or 'Eine Deklination eingeben...' }}" 
+                                       autocomplete="off"
+                                       required
+                                       autofocus>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    {{ t.check or 'Prüfen' }} {{ icons.get('check', '✓') }}
+                                </button>
+                                <a href="{{ url_for('reset_test_group') }}" class="btn btn-secondary btn-lg ms-2">
+                                    {{ t.reset or 'Zurücksetzen' }}
+                                </a>
+                            </div>
+                        </form>
+
+                    </div>  {# card-body #}
+                </div>      {# card #}
+            </div>          {# col #}
+        </div>              {# row #}
+    </div>                  {# container #}
+</div>                      {# bg-light wrapper #}
+{% endblock %}

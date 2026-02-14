@@ -51,7 +51,13 @@
             <td class="score-cell">{{ word.score_pct }}%</td>
             <td class="action-cell">    
                 <button class="edit-btn">{{ icons['edit'] }}</button>
-                <button class="delete-btn" data-word-id="{{ word.id }}" data-mutter="{{ word.mutter_word }}">{{ icons['delete'] }}</button>
+                <form style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="button" onclick="deleteWord('{{ word.id }}', '{{ word.language_pair.name }}')" 
+                            class="btn btn-sm btn-outline-danger">
+                        {{ icons['delete'] }} 
+                    </button>
+                </form>
             </td>
         </tr>
         {% endfor %}
@@ -83,31 +89,30 @@ document.addEventListener('click', function(e) {
     }
 });
 
-function deleteWord(wordId, origMutter) {
-    if (!confirm(`Vokabel wirklich löschen? ${origMutter}`)) return;
+function deleteWord(wordId, pairName) {
+    if (!confirm('Delete this word permanently?')) return;
     
     fetch(`/admin/delete_word/${wordId}`, {
         method: 'DELETE',
         headers: {
-            'X-CSRFToken': csrfToken,
-            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpResponse',  // Trigger AJAX
+            'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
         }
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            const row = document.querySelector(`tr[data-word-id="${wordId}"]`);
-            if (row) row.remove();
-            showNotification(data.message);
+            alert(data.message);  // Oder fadeOut Zeile
+            window.location.href = `/admin/words/${pairName}`;
         } else {
-            alert(data.error || 'Fehler beim Löschen');
+            alert('Error: ' + data.error);
         }
     })
-    .catch(error => {
-        console.error('Delete error:', error);
-        alert('Netzwerkfehler');
-    });
+    .catch(err => alert('Delete failed: ' + err));
+
 }
+
+
 
 // FIX: Edit Row - no automatic Save for Blur
 function editRow(wordId) {
@@ -196,11 +201,11 @@ async function saveRow(wordId) {
             
             showNotification('Vokabel gespeichert!');
         } else {
-            alert('Fehler: ' + (data.error || 'Unbekannt'));
+            alert('Fehler: ' + (data.error || 'unknown'));
         }
     } catch (error) {
         console.error('Save error:', error);
-        alert('Netzwerkfehler');
+        alert('Error');
     }
 }
 
@@ -218,6 +223,9 @@ function cancelEdit(wordId) {
         <button class="delete-btn" data-word-id="${wordId}" data-mutter="${row.dataset.mutter}">{{ icons['delete'] }}</button>
     `;
 }
+
+
+
 
 // Event Listeners (delegation)
 document.addEventListener('click', function(e) {
