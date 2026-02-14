@@ -7,7 +7,6 @@ __pychache__
 .venv
 .qodo
 uv.lock
-*.toml
 *.flag
 app/instance/*
 
