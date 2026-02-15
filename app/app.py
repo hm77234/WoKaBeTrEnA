@@ -2,6 +2,7 @@
 import csv
 import io
 import os
+import sys
 from pathlib import Path
 from datetime import datetime
 
@@ -10,7 +11,7 @@ import random
 from difflib import SequenceMatcher
 from sqlalchemy import func, case, and_, text, inspect, create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, SAWarning
 
 import logging
 from functools import wraps
@@ -19,6 +20,7 @@ from definitions.icons import ICONS
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_wtf import FlaskForm
+from flask_sqlalchemy import SQLAlchemy #pyinstaller problem
 from wtforms import PasswordField, SubmitField
 from wtforms.validators import DataRequired, EqualTo
 import coloredlogs
@@ -29,14 +31,20 @@ import ast
 import shutil  # for Backup
 
 
-__VERSION__ = "0.1.115"
+import warnings
+warnings.filterwarnings("ignore", category=SAWarning)
+
+
+__VERSION__ = "0.1.116"
+
+
 
 ##READ ENV VARS
 #init logging
 LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO').upper()
 # set db path
 # absolute DB-Path or relativ to parent dir
-DB_PATH = os.environ.get('VT_DB_PATH', './instance/vocab.db')
+DB_PATH = os.environ.get('VT_DB_PATH','./instance/vocab.db')
 MAX_BACKUP = os.environ.get('MAX_BACKUP', 10)
 
 #check if MAX_BACKUP is integer
@@ -44,15 +52,27 @@ if not isinstance(MAX_BACKUP, int):
     MAX_BACKUP = 10
 
 
+# Override DB_PATH for PyInstaller
+def get_base_dir():
+    if getattr(sys, 'frozen', False):
+        # PyInstaller: use EXECUTABLE dir or home
+        base_dir = Path.home() / ".vokabeltrainer"
+    else:
+        # Dev: script parent
+        base_dir = Path(__file__).parent.absolute()
+    
+    base_dir.mkdir(parents=True, exist_ok=True)
+    return base_dir
+
 # abs. path + instance/ Fallback
-BASE_DIR = Path(__file__).parent.absolute()
+BASE_DIR = get_base_dir()
 DB_ABS_PATH = BASE_DIR / DB_PATH
 
 # instance/ Fallback if relative
 if not DB_ABS_PATH.is_absolute():
     DB_ABS_PATH = BASE_DIR / 'instance' / DB_PATH
-
-
+    
+DB_ABS_PATH.parent.mkdir(parents=True, exist_ok=True)  # Ensure dir
 
 logging.basicConfig(
     level=LOGLEVEL,
@@ -64,7 +84,8 @@ logger = logging.getLogger("VT-APP")
 coloredlogs.install(level=LOGLEVEL, logger=logger)
 logger.info(f"Starting Vocabulary Trainer v{__VERSION__}")
 logger.info("Logger initialized - loglevel: %s", LOGLEVEL)
-
+logger.info(f"DB writable: {os.access(DB_ABS_PATH.parent, os.W_OK)}")
+logger.info(f"DB parent perms: {oct(os.stat(DB_ABS_PATH.parent).st_mode)[-3:]}")
 #SSL Certificates folder
 CERTS = 'certs'
 #ENV
@@ -95,6 +116,7 @@ app = Flask(__name__)
 app.config['VERSION'] = __VERSION__
 #app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + DBNAME
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_ABS_PATH}"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['DB_PATH'] = str(DB_ABS_PATH)  # Für Templates/Backups
 logger.info(f"DB Path: {app.config['DB_PATH']}")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -113,7 +135,8 @@ if os.path.exists(CERTS) and os.path.isdir(CERTS):
 else:
     logger.warning("SSL Certificates folder '%s' not found", CERTS)
 
-
+# lazy mode (pyinsteller problem)
+db = SQLAlchemy()
 
 csrf = CSRFProtect(app)
 
@@ -122,9 +145,9 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 
-#  DB IMPORTS to app
+#  DB IMPORTS to app , do not MOVE this import here
 from models import db, LanguagePair, Word, User, TrainingGroup, WordTrainingGroup, Tense1, Tense2, Tense3, Tense4, Tense5, Tense6, Tense7, Tense8, TenseMapping
-db.init_app(app)
+
 logger.debug("app initialized")
 
 # hardcode tesnsetables to fix a getattrib problem
@@ -287,6 +310,7 @@ def inject_globals():
 
 
 # init_db 
+
 def init_db():
     logger.debug("Initializing database...")
     if os.path.exists('db_initialized.flag'):
@@ -313,6 +337,7 @@ def init_db():
         logger.info(f"DB initialisiert: {len(pairs)} Pairs")
 
 # Init runs at APP-START 
+db.init_app(app)
 init_db()
 
 
@@ -1366,6 +1391,7 @@ def admin_backup_db():
 @app.get('/admin/restore-db')
 @app.post('/admin/restore-db')
 @login_required_change_password
+
 def admin_restore_db():
     """ Restor DB (Admin only)"""
     t = app.config['TRANSLATIONS']

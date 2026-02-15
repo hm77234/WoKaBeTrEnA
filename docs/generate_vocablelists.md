@@ -5,7 +5,7 @@
 
     WARNING: If you use AI, always check the result, AI is far away from perfect, even good.
 
-## examlpe prompts
+## example prompts
 
     A1, A2, B1, ... Language levels
     German-Spanish  Language pair

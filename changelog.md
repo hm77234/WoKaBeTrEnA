@@ -1,4 +1,8 @@
-# app.py new 0.1.115
+# app.py new 0.1.116
+* add pyinstaller support in app
+* add spec file
+
+# app.py 0.1.115
 * add declinations
 * more stylesheet and layout
 

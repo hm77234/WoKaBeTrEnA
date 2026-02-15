@@ -8,6 +8,7 @@ __pychache__
 .qodo
 uv.lock
 *.flag
+*.pem
 app/instance/*
-
+app/certs/*
 

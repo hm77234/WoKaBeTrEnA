@@ -122,6 +122,45 @@ There are defaultgroups. New groups are created during upload.
 
 # Limitations
 
+# Building Vokabeltrainer Binary
+
+   Vokabeltrainer can be packaged as a standalone executable using PyInstaller—no Python install needed!
+
+   ***Prerequisites***
+      •	Python 3.12+ with  pyinstaller ,  uvicornstandard 
+      •	Copy  spec/wokabetrena.spec  to  app/  directory
+
+   ***Build Commands***
+
+   *cd app/*
+   *pyinstaller wokabetrena.spec*
+   
+   Or with uv:
+   
+   *uv run pyinstaller wokabetrena.spec*
+
+   ***Output***  
+   dist/wokabetrena  (macOS/Linux) or  dist/wokabetrena.exe  (Windows)
+
+   ***Run Binary***
+
+   *./dist/wokabetrena*
+
+   ***HTTPS server:***  
+   https://localhost:33443  (self-signed cert)
+  
+   ***Notes***
+   ✅ Tested: macOS (arm64/x86)
+   ⚠️ Untested: Linux/Windows (should work, report issues)
+   ⚠️ Check your certs
+   ⚠️ Change your favorit port in main.py
+   ⚠️ rm -rf build dist/  in app dir (delete old builds and dists)
+
+
+## Troubleshooting Binary
+
+ * Port in use: sudo lsof -ti:13443
+ * DB permissions: DB auto-creates in  ~/.vokabeltrainer/ 
 
 # Restore and admin passwords
 
