@@ -122,12 +122,12 @@ There are defaultgroups. New groups are created during upload.
 
 # Limitations
 
-# Building Vokabeltrainer Binary
+# Building WoKaBeTrEnA Binary
 
-   Vokabeltrainer can be packaged as a standalone executable using PyInstaller—no Python install needed!
+   WoKaBeTrEnA can be packaged as a standalone executable using PyInstaller—no Python install needed!
 
    ***Prerequisites***
-      •	Python 3.12+ with  pyinstaller ,  uvicornstandard 
+      •	Python 3.12+ with  pyinstaller ,  uvicorn[standard]
       •	Copy  spec/wokabetrena.spec  to  app/  directory
 
    ***Build Commands***
