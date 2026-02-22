@@ -1,7 +1,7 @@
 # models.py - Updated with Multi-Group support (English comments)
 # 
 
-__VERSION__ = "0.1.116"
+__VERSION__ = "0.1.118"
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -45,19 +45,34 @@ class TenseMapping(db.Model):
     
     language_pair = db.relationship('LanguagePair', backref='tense_mappings')
     
+    user_preferences = db.relationship(
+        "UserPreference",
+        secondary="user_preferred_tenses",
+        back_populates="preferred_tenses"
+    )
+    
 class TrainingGroup(db.Model):
-    """Training groups for categorizing words (e.g., 'Travel', 'Basics')."""
+    """Training groups per language pair (e.g., 'Travel-deutsch-spanisch')."""
     __tablename__ = 'training_group'
     
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
+    name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(255))
+    language_pair_id = db.Column(db.Integer, db.ForeignKey('language_pair.id'), nullable=False)
     
-    # Many-to-Many: One group has many words
+    # ✅ INLINE relationships (no mapper issues)
+    language_pair = db.relationship('LanguagePair', back_populates='training_groups')
+    
     words = db.relationship(
         "Word", 
         secondary="word_training_group", 
         back_populates="training_groups"
+    )
+    
+    user_preferences = db.relationship(
+        "UserPreference", 
+        secondary="user_preferred_groups", 
+        back_populates="preferred_groups"
     )
 
 class WordTrainingGroup(db.Model):
@@ -120,6 +135,7 @@ class LanguagePair(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     mutter = db.Column(db.String(20), nullable=False)  # 'deutsch', 'englisch', 'spanisch', ...
     foreign = db.Column(db.String(20), nullable=False)  # 'spanisch', 'englisch', 'italienisch', ...
+    training_groups = db.relationship('TrainingGroup', back_populates='language_pair') 
     
     NATIVE_NAMES  = {}
 
@@ -149,6 +165,11 @@ class LanguagePair(db.Model):
         foreign_native = self.NATIVE_NAMES.get(self.foreign, self.foreign.title())
         return f"{foreign_native} → {mutter_native}"
 
+    user_preferences = db.relationship(
+        "UserPreference", 
+        back_populates="language_pair"
+    ) 
+    
 class Word(db.Model):
     """Word model with multi-group support."""
     id = db.Column(db.Integer, primary_key=True)
@@ -205,3 +226,60 @@ class Word(db.Model):
     def score_pct(self):
         raw = (self.checks_correct + 0.5 * self.checks_almost) / max(1, self.checks_total)
         return min(100.0, raw * 100)
+
+
+# Add to models.py after Word class
+
+class UserPreference(db.Model):
+    """User-specific preferences for training groups and tenses per language pair."""
+    __tablename__ = 'user_preference'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    language_pair_id = db.Column(db.Integer, db.ForeignKey('language_pair.id'), nullable=False)
+    
+    user = db.relationship('User', backref='preferences')  # Backref to User.preferences
+    language_pair = db.relationship(
+        'LanguagePair', 
+        back_populates='user_preferences'  # Explicit bidirectional
+    )
+    
+    # Many-to-many: preferred training groups
+    preferred_groups = db.relationship(
+        "TrainingGroup",
+        secondary="user_preferred_groups",
+        back_populates="user_preferences"
+    )
+    
+    # Many-to-many: preferred tenses
+    preferred_tenses = db.relationship(
+        "TenseMapping",
+        secondary="user_preferred_tenses",
+        back_populates="user_preferences"
+    )
+
+
+class UserPreferredGroups(db.Model):
+    """Association table for UserPreference <-> TrainingGroup."""
+    __tablename__ = 'user_preferred_groups'
+    preference_id = db.Column(db.Integer, db.ForeignKey('user_preference.id'), primary_key=True)
+    training_group_id = db.Column(db.Integer, db.ForeignKey('training_group.id'), primary_key=True)
+
+class UserPreferredTenses(db.Model):
+    """Association table for UserPreference <-> TenseMapping."""
+    __tablename__ = 'user_preferred_tenses'
+    preference_id = db.Column(db.Integer, db.ForeignKey('user_preference.id'), primary_key=True)
+    tense_mapping_id = db.Column(db.Integer, db.ForeignKey('tense_mapping.id'), primary_key=True)
+
+# Add backrefs to existing models
+TrainingGroup.user_preferences = db.relationship(
+    "UserPreference",
+    secondary="user_preferred_groups",
+    back_populates="preferred_groups"
+)
+
+TenseMapping.user_preferences = db.relationship(
+    "UserPreference",
+    secondary="user_preferred_tenses",
+    back_populates="preferred_tenses"
+)

@@ -12,6 +12,7 @@ from difflib import SequenceMatcher
 from sqlalchemy import func, case, and_, text, inspect, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError, SAWarning
+from sqlalchemy.orm import joinedload
 
 import logging
 from functools import wraps
@@ -30,12 +31,11 @@ import ast
 
 import shutil  # for Backup
 
-
 import warnings
 warnings.filterwarnings("ignore", category=SAWarning)
 
 
-__VERSION__ = "0.1.116"
+__VERSION__ = "0.1.118"
 
 
 
@@ -146,7 +146,8 @@ login_manager.login_view = 'login'
 
 
 #  DB IMPORTS to app , do not MOVE this import here
-from models import db, LanguagePair, Word, User, TrainingGroup, WordTrainingGroup, Tense1, Tense2, Tense3, Tense4, Tense5, Tense6, Tense7, Tense8, TenseMapping
+from models import db, LanguagePair, Word, User, TrainingGroup, WordTrainingGroup, Tense1, Tense2, Tense3, Tense4, Tense5, Tense6, Tense7, Tense8, TenseMapping, UserPreference
+
 
 logger.debug("app initialized")
 
@@ -320,21 +321,41 @@ def init_db():
     with app.app_context():
         db.create_all()
         
+        # 1. MUTTERLANG PAIRS FIRST 
         mutter = app.config['MUTTERLANG']
         pairs = []
-        
         for foreign in app.config['LANGUAGES']:
             if foreign != mutter:
                 pair = LanguagePair.query.filter_by(mutter=mutter, foreign=foreign).first()
                 if not pair:
                     pair = LanguagePair(mutter=mutter, foreign=foreign)
                     db.session.add(pair)
+                    db.session.flush()  # ID needed for groups!
                     pairs.append(pair)
         
+        logger.info(f" Created {len(pairs)} pairs: {', '.join([p.name for p in pairs])}")
+        
+        # 2. GROUPS PER PAIR (NEW)
+        with db.session.no_autoflush: 
+            for pair in LanguagePair.query.all():
+                logger.debug(f"Creating groups for {pair.name_title}...")
+                for name in app.config["TRANSLATIONS"].get('defaultgroups', []):
+                    if not TrainingGroup.query.filter_by(name=name, language_pair_id=pair.id).first():
+                        group = TrainingGroup(
+                            name=name,
+                            description=f'{name} vocabulary',
+                            language_pair_id=pair.id  #  Valid ID!
+                        )
+                        db.session.add(group)
+                logger.info(f"{pair.name_title}: {TrainingGroup.query.filter_by(language_pair_id=pair.id).count()} groups")
+        
+        # 3. Flag
         db.session.commit()
         with open('db_initialized.flag', 'w') as f:
             f.write('1')
-        logger.info(f"DB initialisiert: {len(pairs)} Pairs")
+        db.session.flush()
+        logger.info(" DB fully initialized!")
+
 
 # Init runs at APP-START 
 db.init_app(app)
@@ -415,7 +436,7 @@ def init_training_groups():
             db.session.rollback()
             logger.error(f"{i['error']} init_training_groups failed: {e}")
 
-init_training_groups()
+#init_training_groups()
 
 def similarity(a: str, b: str) -> float:
     return SequenceMatcher(None, a, b).ratio() 
@@ -442,6 +463,48 @@ def login():
 def logout():
     logout_user()
     return redirect('/login')
+
+def get_declination_groups(pair, mutter):
+    groups_query = (
+        db.session.query(TrainingGroup.name)
+        .join(WordTrainingGroup, TrainingGroup.id == WordTrainingGroup.training_group_id)
+        .join(Word, Word.id == WordTrainingGroup.word_id)
+        .join(LanguagePair, Word.language_pair_id == LanguagePair.id)
+        .filter(
+            LanguagePair.mutter == mutter,
+            LanguagePair.foreign == pair.foreign,
+            db.or_(
+                Word.tense1_id.isnot(None),
+                Word.tense2_id.isnot(None),
+                Word.tense3_id.isnot(None),
+                Word.tense4_id.isnot(None),
+                Word.tense5_id.isnot(None),
+                Word.tense6_id.isnot(None),
+                Word.tense7_id.isnot(None),
+                Word.tense8_id.isnot(None),
+            ),
+            TrainingGroup.name.isnot(None),
+        )
+        .distinct()
+        .order_by(TrainingGroup.name)
+        .all()
+    )
+
+    return ["all"] + [g[0] for g in groups_query]
+
+def get_available_declination_tenses(pair):
+    tenses = (
+        db.session.query(TenseMapping.tense_name)
+        .filter_by(language_pair_id=pair.id)
+        .distinct()
+        .all()
+    )
+
+    tense_list = [t[0] for t in tenses]
+
+    # Always include random option
+    return tense_list + ["random"]
+    
 
 @app.route("/")
 @login_required_change_password 
@@ -474,8 +537,10 @@ def testdeclination(pair_name):
     # Session persistence for group and new: tense
     group = session.get('testdeclgroup', request.args.get('group')) or 'all'
     tense_name = session.get('testdecltense', request.args.get('tense', 'random'))  # New: tense param, default 'random'
-    selected_group = request.args.get('group', group)
-    selected_tense = request.args.get('tense', tense_name)
+    #selected_group = request.args.get('group', group)
+    #selected_tense = request.args.get('tense', tense_name)
+    selected_group = session.get("selected_group", "all")
+    selected_tense = session.get("selected_tense", "random")
     
     # Get language pair (same as original)
     pair = LanguagePair.query.filter(
@@ -512,6 +577,7 @@ def testdeclination(pair_name):
         
         session['testdeclgroup'] = group  # Persist
         session['testdecltense'] = tense_name  # New persistence
+
         
         if word_id != -1:
             user_answer = request.form['answer'].strip().lower()
@@ -569,36 +635,30 @@ def testdeclination(pair_name):
     # Groups (same as original)
 
 
-    groups_query = db.session.query(TrainingGroup.name)\
-        .join(WordTrainingGroup)\
-        .join(Word)\
-        .outerjoin(Tense1, Word.tense1_id == Tense1.id) \
-        .outerjoin(Tense2, Word.tense2_id == Tense2.id) \
-        .outerjoin(Tense3, Word.tense3_id == Tense3.id) \
-        .outerjoin(Tense4, Word.tense4_id == Tense4.id) \
-        .outerjoin(Tense5, Word.tense5_id == Tense5.id) \
-        .outerjoin(Tense6, Word.tense6_id == Tense6.id) \
-        .outerjoin(Tense7, Word.tense7_id == Tense7.id) \
-        .outerjoin(Tense8, Word.tense8_id == Tense8.id) \
-        .join(LanguagePair)\
-        .filter(
-            LanguagePair.mutter == mutter,
-            LanguagePair.foreign == pair.foreign,
-            # Hat mindestens EINE Tense-Tabelle Daten
-            db.or_(
-                Word.tense1_id.isnot(None),
-                Word.tense2_id.isnot(None),
-                Word.tense3_id.isnot(None),
-                Word.tense4_id.isnot(None),
-                Word.tense5_id.isnot(None),
-                Word.tense6_id.isnot(None),
-                Word.tense7_id.isnot(None),
-                Word.tense8_id.isnot(None)
-            )
-        )\
-        .filter(TrainingGroup.name.isnot(None))\
-        .distinct()\
-        .order_by(TrainingGroup.name).all()
+    groups_query = (
+    db.session.query(TrainingGroup.name)
+    .join(WordTrainingGroup, TrainingGroup.id == WordTrainingGroup.training_group_id)
+    .join(Word, Word.id == WordTrainingGroup.word_id)
+    .join(LanguagePair, Word.language_pair_id == LanguagePair.id)
+    .filter(
+        LanguagePair.mutter == mutter,
+        LanguagePair.foreign == pair.foreign,
+        db.or_(
+            Word.tense1_id.isnot(None),
+            Word.tense2_id.isnot(None),
+            Word.tense3_id.isnot(None),
+            Word.tense4_id.isnot(None),
+            Word.tense5_id.isnot(None),
+            Word.tense6_id.isnot(None),
+            Word.tense7_id.isnot(None),
+            Word.tense8_id.isnot(None),
+        ),
+        TrainingGroup.name.isnot(None),
+    )
+    .distinct()
+    .order_by(TrainingGroup.name)
+    .all()
+    )
 
     groups = ['all'] + [g[0] for g in groups_query]
     if group not in groups:
@@ -705,6 +765,28 @@ def testdeclination(pair_name):
         foreign=pair.foreign
     )
 
+def make_get_words(knowledge_level, score_expr):
+    """Group-aware word filter."""
+    def schwach(query):
+        return query.filter(score_expr < 0.8).order_by(score_expr).limit(50).all()
+    
+    def mittel(query):
+        return query.filter(score_expr >= 0.8, score_expr < 0.95).order_by(score_expr.desc()).limit(50).all()
+    
+    def stark(query):
+        return query.filter(score_expr >= 0.95).order_by(score_expr.desc()).limit(50).all()
+    
+    def all_random(query):
+        return query.order_by(func.random()).limit(50).all()
+    
+    functions = {
+        "schwach": schwach,
+        "mittel": mittel,
+        "stark": stark,
+        "all": all_random
+    }
+    
+    return functions[knowledge_level]
 
 @app.route('/test/<pair_name>', methods=['GET', 'POST'])
 @login_required_change_password 
@@ -714,15 +796,7 @@ def test(pair_name):
     t = app.config['TRANSLATIONS'] #  Translations dict
     i = app.config['ICONS']
     
-    if request.method == 'POST' and 'group' in request.form:  # From select dropdowns
-        session['test_group'] = request.form['group']
-        session['test_kb'] = request.form['knowledgebase'] 
-        selected_group = request.form['group']
-        group = request.form['group']
-        
-    else:
-        group = session.get('test_group', request.args.get('group'))
-        selected_group = request.args.get("group", "all")
+    
     #kb = session.get('test_kb', request.args.get('knowledgebase', 'all'))
     pair = (LanguagePair.query
         .filter(db.or_(
@@ -738,6 +812,37 @@ def test(pair_name):
         flash(f'{i['error']} Pair "{pair_name}" {t["pair_not_found"]}!')   #  Translated
         return redirect('/')
 
+    user_pref = UserPreference.query.filter_by(
+        user_id=current_user.id, 
+        language_pair_id=pair.id
+    ).first()
+    
+    # Clean session defaults
+    
+    if request.method == 'POST' and 'group' in request.form:
+        # Manual → Persist
+        session['test_group'] = request.form['group']
+        session['test_kb'] = request.form['knowledgebase']
+    else:
+        # Fresh or no manual → Smart defaults
+        if not session.get('test_group'):
+            if user_pref and user_pref.preferred_groups:
+                session['test_group'] = user_pref.preferred_groups[0].name  # First pref
+            else:
+                session['test_group'] = 'all'  # DEFAULT!
+        
+        if not session.get('test_kb'):
+            if user_pref and user_pref.preferred_tenses and any(t.id != 0 for t in user_pref.preferred_tenses):
+                # Use first NON-random tense
+                session['test_kb'] = user_pref.preferred_tenses[0].tense_name
+            else:
+                session['test_kb'] = 'random'  # DEFAULT!
+    
+
+    
+    selected_group = session.get('test_group', 'all')
+    selected_kb = session.get('test_kb', 'random')
+    print(selected_kb)
     direction_pairs = [ {"long": pair.from_mutter_native, "short": "A→B"}, {"long": pair.from_foreign_native, "short": "B→A"} ]
  
     #initial values
@@ -745,7 +850,7 @@ def test(pair_name):
     prompt_word, target_word, direction = '', '', ''
     
     directions = random.choice(direction_pairs)
-    knowledgebase =  "all"
+   #knowledgebase =  selected_kb
     if direction == '': #initial load
         logger.debug("Initial load - setting random direction")
         random_direction = '1'
@@ -757,7 +862,7 @@ def test(pair_name):
             logging.debug("no word id")
             word_id = -1
             pass
-        knowledgebase = request.form.get('knowledgebase', 'all')
+        #knowledgebase = request.form.get('knowledgebase', 'all')
         test_direction = request.form.get('direction', 'A→B')
         random_direction = request.form.get('random_direction', '0')
         if word_id != -1:
@@ -767,7 +872,7 @@ def test(pair_name):
                 prompt_word = word.mutter_word
                 target_word = word.foreign_word
                 for item in direction_pairs:
-                    for k,v in item.items():
+                    for v in item.values():
                         if v == test_direction:
                             d = v
                             direction = directions["long"]
@@ -775,7 +880,7 @@ def test(pair_name):
 
             else:
                 for item in direction_pairs:
-                    for k,v in item.items():
+                    for v in item.values():
                         if v == test_direction:
                             d = v
                             direction = directions["long"]
@@ -803,8 +908,6 @@ def test(pair_name):
             db.session.commit()
             score_pct = word.score_pct
         
-        
-    
     if random_direction == '1':
         tmp_dir = random.choice(['A→B', 'B→A'])
         for k,v in directions.items():
@@ -819,25 +922,30 @@ def test(pair_name):
                 LanguagePair.foreign == pair_name.split('-')[1]
             )
      )
+    if user_pref and user_pref.preferred_groups:
+        group_ids = [g.id for g in user_pref.preferred_groups]
+        query = query.join(Word.training_groups).filter(
+            TrainingGroup.id.in_(group_ids)
+        )
+
+    # Manual group filter (if set)
+    elif selected_group != "all":
+        query = query.join(Word.training_groups).filter(
+            TrainingGroup.name == selected_group
+        )
+
     
     #groups
-    groups_query = (db.session.query(TrainingGroup.name)
-    .join(WordTrainingGroup)
-    .join(Word)
-    .join(LanguagePair)
-    .filter(
-        LanguagePair.mutter == mutter,
-        LanguagePair.foreign == pair.foreign
-    )
-    .filter(TrainingGroup.name.isnot(None))
-    .distinct()
-    .order_by(TrainingGroup.name)
-    .all()
-    )
+    groups_query = db.session.query(TrainingGroup.name.distinct()).join(
+        WordTrainingGroup, TrainingGroup.id == WordTrainingGroup.training_group_id
+    ).join(
+        Word, Word.id == WordTrainingGroup.word_id
+    ).filter(
+        Word.language_pair_id == pair.id
+    ).order_by(TrainingGroup.name).all()
     
-    groups = ['all'] + [g[0] for g in groups_query]
+    groups = ['all'] + [g[0] for g in groups_query if g[0]]
 
-  
     # set groupfilter         
     if selected_group != "all":
         query = (
@@ -857,40 +965,41 @@ def test(pair_name):
     knowledgebase_dict = {
         "schwach": {
             "status": t["poorknowledge"] + " (<80%)", 
-            "get_words": lambda q: q.filter(score_expr < 0.8).order_by(score_expr).limit(50).all()
+            "get_words":  make_get_words("schwach", score_expr) 
             },
          "mittel": {
              "status": t["mediumknowledge"] + " (80-95%)", 
-             "get_words": lambda q: q.filter(score_expr >= 0.8, score_expr < 0.95).order_by(score_expr.desc()).limit(50).all()
+             "get_words": make_get_words("mittel", score_expr)
              },
         "stark": {
             "status": t["strongknowledge"] + " (≥95%)",
-            "get_words": lambda q: q.filter(score_expr >= 0.95).order_by(score_expr.desc()).limit(50).all()
+            "get_words": make_get_words("stark",score_expr)
             },
         "all": {
             "status": f"{t['allwords']} ({selected_group if selected_group != 'all' else 'alle Gruppen'})", 
-            "get_words": lambda q: q.order_by(func.random()).limit(50).all()}  # Zufällig!
+            "get_words": make_get_words("all",score_expr)}  # Zufällig!
     }
     
-    logger.debug("Knowledgbase: " )
-    if knowledgebase in knowledgebase_dict:
-        words = knowledgebase_dict[knowledgebase]["get_words"](query)
-        status = knowledgebase_dict[knowledgebase]["status"]
+    logger.debug("Knowledgbase: " +   selected_kb)
+
+    if selected_kb in knowledgebase_dict:
+        words = knowledgebase_dict[selected_kb]["get_words"](query)
+        status = knowledgebase_dict[selected_kb]["status"]
+        logger.debug("Knowledgbase: " + status )
     else: #fallback
         logger.warning("Fallback for knowledge used!")
         words = query.order_by(func.random()).limit(50).all()
-        status = f"🎲 {t['allwords']} ({selected_group})"
-    logger.debug("Knowledgbase: " + status )
+        status = f"{t['allwords']} ({selected_group})"
+        logger.debug("Knowledgbase (fallback): " + status )
         
-    #words = Word.query.filter_by(language_pair_id=pair.id).all()
 
     if not words or len(words) == 0:
         logger.debug("No words found for pair: %s", pair_name)
         flash(f'{t["no_words_found"]} {pair.name_title}!')   #
-        return render_template('nowords.html', t=t, mutter=mutter, icons=i, knowledgebase_dict=knowledgebase_dict)
-    
+        return render_template('nowords.html', t=t, mutter=mutter, icons=i, knowledgebase_dict=knowledgebase_dict, groups=groups, selected_kb=selected_kb, selected_group=selected_group)
+     
     next_word = random.choice(words)
-
+    
     return render_template(
         'test.html',
         pair=pair,
@@ -908,13 +1017,55 @@ def test(pair_name):
         icons=i,
         foreign=pair.foreign,
         status=status,
-        knowledgebase=knowledgebase,
+        knowledgebase=selected_kb,
         knowledgebase_dict=knowledgebase_dict,
         groups=groups,
         selected_group=selected_group,
-        group=group
+        selected_kb=selected_kb,
+        user_pref=user_pref
     )
 
+@app.route("/declination/settings/<pair_name>", methods=["GET", "POST"])
+@login_required_change_password
+def declination_settings(pair_name):
+
+    mutter = app.config["MUTTERLANG"]
+    t = app.config["TRANSLATIONS"]
+    icons = app.config["ICONS"]
+
+    pair = LanguagePair.query.filter(
+        db.or_(
+            LanguagePair.name == pair_name,
+            db.and_(
+                LanguagePair.mutter == pair_name.split("-")[0],
+                LanguagePair.foreign == pair_name.split("-")[1],
+            )
+        )
+    ).first_or_404()
+    
+    if request.method == "POST":
+        session["selected_group"] = request.form.get("group", "all")
+        session["selected_tense"] = request.form.get("tense", "random")
+
+        # make session permanent (if not already globally set)
+        session.permanent = True
+
+        return redirect(url_for("testdeclination", pair_name=pair_name))
+
+    groups = get_declination_groups(pair, mutter)
+    available_tenses = get_available_declination_tenses(pair)
+
+    return render_template(
+        "declination_settings.html",
+        pair=pair,
+        groups=groups,
+        available_tenses=available_tenses,
+        selected_group=session.get("selected_group", "all"),
+        selected_tense=session.get("selected_tense", "random"),
+        t=t,
+        icons=icons
+    )
+    
 @app.route('/reset_test_group', methods=['GET', 'POST'])
 def reset_test_group():
     t = app.config['TRANSLATIONS']
@@ -1100,9 +1251,16 @@ def process_csv_upload(csvfile, target_pair):
         if groups_str:
             group_names = [g.strip() for g in groups_str.split(';')]
             for g_name in group_names:
-                group = TrainingGroup.query.filter_by(name=g_name).first()
+                #group = TrainingGroup.query.filter_by(name=g_name).first()
+                group = TrainingGroup.query.filter_by(
+                    name=g_name, language_pair_id=target_pair.id
+                    ).first()
                 if not group:
-                    group = TrainingGroup(name=g_name)
+                    group = TrainingGroup(
+                        name=g_name,
+                        description=f'{g_name} (auto-created)',
+                        language_pair_id=target_pair.id  # new with groups per language pair!
+                    )
                     db.session.add(group)
                 if group not in word.training_groups:
                     word.training_groups.append(group)
@@ -1327,7 +1485,7 @@ def admin_reset_db():
         
         # init it again
         init_admin()
-        init_training_groups()
+        #init_training_groups()
         
         flash(f'{i["success"]} DB {t['reset']}! '
               f'({Word.query.count()}→0 {t['words']}, {User.query.count()}→2 {t['user_title']}, '
@@ -1450,6 +1608,7 @@ def admin_restore_db():
         return redirect('/admin')  # Fixed syntax
 
 #ENDADMIN
+#STATS
 @app.route('/admin/groups_stats')
 @login_required_change_password
 def admin_groups_stats():
@@ -1551,4 +1710,64 @@ def stats():
                          lang_stats_n=lang_stats_n, 
                          t=t, mutter=mutter, icons=i)
 
+#END STATS
+
+
+@app.route('/usersettings', methods=['GET', 'POST'])
+@login_required_change_password
+def user_preferences():
+    user = current_user
+    t = app.config['TRANSLATIONS']
+    i = app.config['ICONS']
+    
+    if request.method == 'POST':
+        pair_id = request.form.get('language_pair_id', type=int)
+        if pair_id:
+            pref = UserPreference.query.filter_by(user_id=user.id, language_pair_id=pair_id).first()
+            if pref: db.session.delete(pref)
+            
+            pref = UserPreference(user_id=user.id, language_pair_id=pair_id)
+            db.session.add(pref)
+            db.session.flush()
+            
+            # Only groups/tenses FOR this language pair
+            for gid in request.form.getlist('groups[]'):
+                group = TrainingGroup.query.get(int(gid))
+                if group: pref.preferred_groups.append(group)
+            
+            for tid in request.form.getlist('tenses[]'):
+                if tid == '0': continue  # Random handled separately
+                tense = TenseMapping.query.filter_by(id=int(tid), language_pair_id=pair_id).first()
+                if tense: pref.preferred_tenses.append(tense)
+            
+            db.session.commit()
+            flash(f'Saved for {LanguagePair.query.get(pair_id).name_title}!', 'success')
+        
+        return redirect(url_for('user_preferences', selected_pair=pair_id))
+    
+    # GET
+    selected_pair = request.args.get('selected_pair', type=int) or LanguagePair.query.first().id
+    pairs = LanguagePair.query.all()
+    user_prefs = {p.language_pair_id: p for p in user.preferences}
+    current_pref = user_prefs.get(selected_pair)
+    
+    # Filter BOTH groups AND tenses by pair
+    all_groups = TrainingGroup.query.filter_by(language_pair_id=selected_pair).all()
+    all_tense_mappings = TenseMapping.query.filter_by(language_pair_id=selected_pair).all()
+        
+    
+
+
+    return render_template(
+        'user_preferences.html',
+        pairs=pairs,
+        selected_pair=selected_pair,
+        user_prefs=user_prefs,
+        current_pref=current_pref,
+        all_groups=all_groups,
+        all_tense_mappings=all_tense_mappings,
+        user=user,
+        t=t,
+        icons=i
+    )
 

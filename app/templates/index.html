@@ -37,7 +37,7 @@
 
             <!-- Sprachen Header -->
             <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px; position:relative; z-index:1;">
-                <div style="font-size:44px; line-height:1;">{{ icons.get('languages','🌍') }}</div>
+                <div style="font-size:44px; line-height:1;">{{ icons.language }}</div>
                 <div>
                     <div style="font-size:13px; text-transform:uppercase; letter-spacing:0.1em; color:#64748b; margin-bottom:4px;">
                         {{ mutter.capitalize() }} → {{ foreign.capitalize() }}
@@ -62,7 +62,7 @@
                        font-weight:500;
                        box-shadow:0 8px 25px rgba(59,130,246,0.3);
                        transition:all .2s ease;">
-                    <div style="font-size:22px; margin-bottom:4px;">{{ icons.get('test','🧪') }}</div>
+                    <div style="font-size:22px; margin-bottom:4px;">{{ icons.test }}</div>
                     <div style="font-size:13px;">{{ t.vokabeltest or 'Vokabel-Test' }}</div>
                 </a>
 
@@ -79,7 +79,7 @@
                        box-shadow:0 8px 25px rgba(245,158,11,0.35);
                        position:relative;
                        transition:all .2s ease;">
-                    <div style="font-size:22px; margin-bottom:4px;">{{ icons.get('declination','📖✨') }}</div>
+                    <div style="font-size:22px; margin-bottom:4px;">{{ icons.declination) }}</div>
                     <div style="font-size:13px;">{{ t.declinationtest or 'Deklination' }}</div>
                     <!-- Neu-Badge -->
                     <div style="
@@ -117,7 +117,7 @@
                     border:1px solid transparent;
                 "
                 onmouseover="this.style.color='#1e293b'; this.style.borderColor='#cbd5e1';">
-                    {{ icons.get('edit','✏️') }} {{ t.words or 'Words verwalten' }}
+                    {{ icons.edit }} {{ t.words or 'Words verwalten' }}
                 </a>
             </div>
             {% endif %}
@@ -141,7 +141,7 @@
             gap:10px;
             transition:all .2s ease;
             font-size:16px;">
-            {{ icons.get('admin','⚙️') }} {{ t.admin or 'Admin (CSV-Import)' }}
+            {{ icons.admin }} {{ t.admin or 'Admin (CSV-Import)' }}
         </a>
     </div>
     {% endif %}

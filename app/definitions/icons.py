@@ -50,7 +50,9 @@ ICONS = {
     'stats': '📈',
     'reset_testgroup': '⏭️',
     'test': '🧪',
-    'declinationtest': '📖✨',
+    'declination': '📖✨',
+    'check':'✓',
+    'language': '🌐',
     
     #roles
     'is_admin': '👑',

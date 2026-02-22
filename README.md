@@ -91,6 +91,8 @@ Load csv-Files
 ## csv formats
 check docs/csvformat.md
 
+## fetch vocable lists
+check docs/generate_vocablelists.md
 
 # Trainingsgroups
 There are defaultgroups. New groups are created during upload.
@@ -121,6 +123,8 @@ There are defaultgroups. New groups are created during upload.
 - look at todo.md for the next features
 
 # Limitations
+
+   currently no limitation
 
 # Building WoKaBeTrEnA Binary
 
