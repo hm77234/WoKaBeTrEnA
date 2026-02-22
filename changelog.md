@@ -1,4 +1,4 @@
-# app.py new 0.1.118
+# app.py new 0.1.119
 * add pyinstaller support in app
 * add spec file
 * better translations
