@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h1>Edit Group: {{ group.name }}</h1>
+    <form method="POST" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            <label for="words">Words to Add (one per line):</label><br>
+            <textarea name="words" id="words" class="form-control" rows="10">{{ form.words.data }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label for="words_removed">Word IDs to Remove:</label><br>
+            <textarea name="words_removed" id="words_removed" class="form-control" rows="10">{{ form.words_removed.data }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Update Group Membership</button>
+    </form>
+</div>
+{% endblock %}

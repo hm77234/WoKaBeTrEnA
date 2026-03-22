@@ -15,14 +15,14 @@
         </label>
     </div>
     <div>
-        <label>{{ icons.group }} {{ t['group'] }}:
+        <label>{{ icons.group }} {{ t.group }}:
             <select name="group">
                 {% if groups %}
                     {% for g in groups %}
                     <option value="{{ g }}" {{ 'selected' if g == selected_group }}>{{ g.title() }}</option>
                     {% endfor %}
                 {% else %}
-                    <option value="all" {{ 'selected' if selected_group == 'all' }}>{{ icons.test }} {{ t['allwords'] }}</option>
+                    <option value="all" {{ 'selected' if selected_group == 'all' }}>{{ icons.test }} {{ t.allwords }}</option>
                 {% endif %}
             </select>
         </label>

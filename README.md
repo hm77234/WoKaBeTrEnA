@@ -131,12 +131,13 @@ There are defaultgroups. New groups are created during upload.
    WoKaBeTrEnA can be packaged as a standalone executable using PyInstaller—no Python install needed!
 
    ***Prerequisites***
-      •	Python 3.12+ with  pyinstaller ,  uvicorn[standard]
-      •	Copy  spec/wokabetrena.spec  to  app/  directory
+   * Python 3.12+ with  pyinstaller ,  uvicorn[standard]
+   * Copy  spec/wokabetrena.spec  to  app/  directory
 
    ***Build Commands***
 
    *cd app/*
+
    *pyinstaller wokabetrena.spec*
    
    Or with uv:
@@ -154,11 +155,11 @@ There are defaultgroups. New groups are created during upload.
    https://localhost:33443  (self-signed cert)
   
    ***Notes***
-   ✅ Tested: macOS (arm64/x86)
-   ⚠️ Untested: Linux/Windows (should work, report issues)
-   ⚠️ Check your certs
-   ⚠️ Change your favorit port in main.py
-   ⚠️ rm -rf build dist/  in app dir (delete old builds and dists)
+   - ✅ Tested: macOS (arm64/x86)
+   - ⚠️ Untested: Linux/Windows (should work, report issues)
+   - ⚠️ Check your certs
+   - ⚠️ Change your favorit port in main.py
+   - ⚠️ rm -rf build dist/  in app dir (delete old builds and dists)
 
 
 ## Troubleshooting Binary

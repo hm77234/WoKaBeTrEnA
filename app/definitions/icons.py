@@ -42,20 +42,25 @@ ICONS = {
     'arrow_up': '↑',
     'arrow_down': '↓',
     
-    # Perfect for your templates!
+    # Perfect for  templates!
     'imported': '✅',
     'duplicate': '⏭️',
     'admin_groups': '📈',
     'students': '👥',
+    'admin_users': '👥',
     'stats': '📈',
     'reset_testgroup': '⏭️',
     'test': '🧪',
     'declination': '📖✨',
     'check':'✓',
     'language': '🌐',
+    'groups': '📖',
     
     #roles
     'is_admin': '👑',
     'is_student': '👤',
-    'unknown': '❓'
+    'unknown': '❓',
+    
+    #arrows
+    'arrow_down': '▾'
 }

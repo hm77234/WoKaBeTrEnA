@@ -20,9 +20,9 @@
     </form>
     <div style="color:#666;">
         {% if q %}
-            {{ words|length }} {{ t['result_for']}} "{{ q }}"
+            {{ words|length }} {{ t.result_for}} "{{ q }}"
         {% else %}
-        {{ t['allwords']}} {{ words|length }} 
+        {{ t.allwords}} {{ words|length }} 
         {% endif %}
     </div>
 </div>
@@ -31,11 +31,11 @@
 <table>
     <thead>
         <tr>
-            <th>{{ t['mutter_label'] }}</th>
-            <th>{{ t['foreign_language'] }}</th>
-            <th>{{ t['info'] }}</th>
-            <th>{{ t['score_label'] }}</th>
-            <th>{{ t['action_label'] }}</th>
+            <th>{{ t.mutter_label }}</th>
+            <th>{{ t.foreign_language }}</th>
+            <th>{{ t.info }}</th>
+            <th>{{ t.score_label }}</th>
+            <th>{{ t.action_label }}</th>
         </tr>
     </thead>
     <tbody>
@@ -51,6 +51,10 @@
             <td class="score-cell">{{ word.score_pct }}%</td>
             <td class="action-cell">    
                 <button class="edit-btn">{{ icons['edit'] }}</button>
+                <a href="{{ url_for('admin_edit_word_groups', word_id=word.id) }}"
+                class="btn-group-assign">
+                    {{ icons['group'] }} 
+                </a>
                 <form style="display:inline;">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="button" onclick="deleteWord('{{ word.id }}', '{{ word.language_pair.name }}')" 
@@ -59,6 +63,7 @@
                     </button>
                 </form>
             </td>
+
         </tr>
         {% endfor %}
     </tbody>

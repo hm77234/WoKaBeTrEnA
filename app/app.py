@@ -10,9 +10,9 @@ from flask import Flask, request, flash, redirect, render_template, Blueprint,  
 import random
 from difflib import SequenceMatcher
 from sqlalchemy import func, case, and_, text, inspect, create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, joinedload  
 from sqlalchemy.exc import SQLAlchemyError, SAWarning
-from sqlalchemy.orm import joinedload
+#from sqlalchemy.orm import joinedload
 
 import logging
 from functools import wraps
@@ -24,6 +24,7 @@ from flask_wtf import FlaskForm
 from flask_sqlalchemy import SQLAlchemy #pyinstaller problem
 from wtforms import PasswordField, SubmitField
 from wtforms.validators import DataRequired, EqualTo
+from forms import GroupForm, GroupMembershipForm
 import coloredlogs
 
 from difflib import SequenceMatcher
@@ -35,7 +36,7 @@ import warnings
 warnings.filterwarnings("ignore", category=SAWarning)
 
 
-__VERSION__ = "0.1.119"
+__VERSION__ = "0.1.122"
 
 
 
@@ -1166,6 +1167,38 @@ def admin_delete_word_api(word_id):
         'redirect': url_for('admin_words', pair_name=pair_name)
     })
 
+@app.route("/admin/edit_word_groups/<int:word_id>", methods=["GET", "POST"])
+@login_required_change_password
+
+
+def admin_edit_word_groups(word_id):
+    if not current_user.is_admin:
+        return redirect("/")
+
+    t = app.config["TRANSLATIONS"]
+    i = app.config["ICONS"]
+
+    # Eager-Load Groups for existing 
+    word = Word.query.options(joinedload(Word.training_groups)).get_or_404(word_id)
+    all_groups = TrainingGroup.query.all()
+    
+    if request.method == "POST":
+        # POST → Groups save
+        selected_group_ids = {int(gid) for gid in request.form.getlist("group_ids")}
+        word.training_groups = [g for g in all_groups if g.id in selected_group_ids]
+        db.session.commit()
+        flash("Gruppenzuordnung gespeichert.", "success")
+        return redirect(url_for("admin_words", pair_name=word.language_pair.name))
+
+    return render_template(
+        "admin_edit_word_groups.html",
+        word=word,
+        all_groups=all_groups,
+        icons=i,
+        t=t,
+    )
+
+
 
 @app.route('/admin/upload', methods=['GET', 'POST'])
 @login_required_change_password
@@ -1606,7 +1639,85 @@ def admin_restore_db():
                 flash(f'{i["error"]} {t["db_restore_failed"]}')
             
         return redirect('/admin')  # Fixed syntax
+    
+### Word Groups
+@app.route('/admin/groups/create', methods=['GET', 'POST'])
+@login_required_change_password
+def admin_group_create():
+    t = app.config['TRANSLATIONS']
+    i = app.config['ICONS']
+    mutter_lang = app.config['MUTTERLANG']
+    form = GroupForm(language=mutter_lang)
+    pairs = LanguagePair.query.filter_by(mutter=mutter_lang).order_by(LanguagePair.foreign).all()
+    form.language_pair_id.choices = [
+            (p.id, p.name) for p in pairs
+    ]   
+    if form.validate_on_submit():
+        language_pair = LanguagePair.query.get(form.language_pair_id.data)
+        group = TrainingGroup(
+            name=form.name.data, 
+            description=form.description.data, 
+            language_pair_id=language_pair.id  # Use the selected language pair
+        )
+        db.session.add(group)
+        db.session.commit()
+        flash('Group created successfully!', 'success')
+        return redirect(url_for('admin_groups'))
 
+    return render_template('admin_group_create.html', form=form, t=t, icons=i)
+
+@app.route('/admin/groups/<int:id>/update', methods=['GET', 'POST'])
+@login_required_change_password
+def admin_group_update(id):
+    t = app.config['TRANSLATIONS']
+    i = app.config['ICONS']
+    if not current_user.is_admin:
+        flash(i['error'] + " " + t['only_admins'])
+        return redirect('/')
+    
+    group = TrainingGroup.query.get_or_404(id)
+    form = GroupForm(obj=group)
+    if form.validate_on_submit():
+        group.name = form.name.data
+        group.description = form.description.data
+        db.session.commit()
+        flash(f'{i["success"]}{t["group_updated"]}', 'success')
+        return redirect(url_for('admin_groups'))
+
+    return render_template('admin_group_update.html', form=form, group=group, t=t, icons=i)
+
+@app.route('/admin/groups/<int:id>/delete', methods=['POST'])
+@login_required_change_password
+def admin_group_delete(id):
+    t = app.config['TRANSLATIONS']
+    i = app.config['ICONS']
+    if not current_user.is_admin:
+        flash(i['error'] + " " + t['only_admins'])
+        return redirect('/')
+    
+    group = TrainingGroup.query.get_or_404(id)
+    db.session.delete(group)
+    db.session.commit()
+    flash(f'{i["success"]}{t["group_deleted"]}', 'success')
+    return redirect(url_for('admin_groups'))
+
+@app.route('/admin/groups', methods=['GET'])
+@login_required_change_password
+def admin_groups():
+    t = app.config['TRANSLATIONS']
+    i = app.config['ICONS']
+    if not current_user.is_admin:
+        flash(i['error'] + " " + t['only_admins'])
+        return redirect('/')
+    
+    groups = db.session.query(
+        TrainingGroup,
+        func.count(Word.id).label("word_count")
+        ).outerjoin(TrainingGroup.words).group_by(TrainingGroup.id).all()
+    
+    
+    return render_template('admin_groups_list.html',icons=i, t=t, groups=groups)
+### end Wordgroups
 #ENDADMIN
 #STATS
 @app.route('/admin/groups_stats')
@@ -1642,7 +1753,7 @@ def admin_groups_stats():
     students = User.query.filter_by(role='student').order_by(User.username).all()
     
 
-    return render_template('admin_groups.html',
+    return render_template('admin_groups_stats.html',
                          group_stats=group_stats,
                          students=students,
                          t=t,
@@ -1712,7 +1823,7 @@ def stats():
 
 #END STATS
 
-
+#START USERSETTINGS
 @app.route('/usersettings', methods=['GET', 'POST'])
 @login_required_change_password
 def user_preferences():

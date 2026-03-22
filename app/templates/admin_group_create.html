@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h1>Create New Group</h1>
+    <form method="POST" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.name.label }}<br>
+            {{ form.name(class_="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.description.label }}<br>
+            {{ form.description(class_="form-control", rows=5) }}
+        </div>
+        <div class="mb-3">
+            {{ form.language_pair_id.label }}<br>
+            {{ form.language_pair_id(class_="form-control") }}
+        </div>
+        <button type="submit" class="btn btn-primary">Create Group</button>
+    </form>
+</div>
+{% endblock %}

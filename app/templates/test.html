@@ -2,22 +2,22 @@
 {% block content %}
 
 {% if not session.test_group %}  {# First visit: Show SELECT #}
-  <h1>{{ icons.test }} {{ t['test_title'] }}: {{ pair.name_title }}
+  <h1>{{ icons.test }} {{ t.test_title }}: {{ pair.name_title }}
     {% if selected_group != 'all' %}- {{ selected_group.title() }}{% endif %}
     ({{ status }})  BLA {{ user_pref }}
   </h1>
  
   <form method="POST" style="background:#f8f9fa; padding:30px; border-radius:12px;">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <h3>{{ icons.rocket }} {{ t['start_test_title'] }}</h3>
+        <h3>{{ icons.rocket }} {{ t.start_test_title }}</h3>
 
         <div style="margin:20px 0;">
             <label style="display:block; margin-bottom:10px; font-weight:bold;">
-                {{ icons.group }} {{ t['group'] }}:
+                {{ icons.group }} {{ t.group }}:
                 <select name="group" required style="width:100%; padding:10px;">
                     {% for g in groups %}
                     <option value="{{ g }}" {{ 'selected' if g == selected_group }}>
-                        {{ icons.test ~ ' ' ~ t['allwords'] if g == 'all' else g.title() }}
+                        {{ icons.test ~ ' ' ~ t.allwords if g == 'all' else g.title() }}
                     </option>
                     {% endfor %}
                 </select>
@@ -26,7 +26,7 @@
 
         <div style="margin:20px 0;">
             <label style="display:block; margin-bottom:10px; font-weight:bold;">
-                {{ icons.stats }} {{ t['knowledege_label'] }}:
+                {{ icons.stats }} {{ t.knowledege_label }}:
                 <select name="knowledgebase" required style="width:100%; padding:10px;">
                     {% for k,v in knowledgebase_dict.items() %}
                     <option value="{{ k }}" {{ 'selected' if k == selected_kb }}>
@@ -38,13 +38,13 @@
         </div>
 
         <button type="submit" class="btn-student" style="width:100%; padding:15px; font-size:1.2em;">
-            {{ icons.target }} {{ t['start_test_button'] }}
+            {{ icons.target }} {{ t.start_test_button }}
         </button>
   </form>
 
 {% else %}
 
-<h1>{{ icons.test }} {{ t['test_title'] }}: {{ pair.name_title }}</h1>
+<h1>{{ icons.test }} {{ t.test_title }}: {{ pair.name_title }}</h1>
 
 {% if result %}
   <div class="flash">
@@ -59,19 +59,19 @@
 <form method="POST" style="background:#f0f8ff; padding:15px; margin-bottom:20px; border-radius:8px;">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-    <label>{{ icons.group }} {{ t['group'] }}:
+    <label>{{ icons.group }} {{ t.group }}:
         <select name="group">
             {% if groups %}
                 {% for g in groups %}
                 <option value="{{ g }}" {{ 'selected' if g == selected_group }}>{{ g.title() }}</option>
                 {% endfor %}
             {% else %}
-                <option value="all" {{ 'selected' if selected_group == 'all' }}>{{ icons.test }} {{ t['allwords'] }}</option>
+                <option value="all" {{ 'selected' if selected_group == 'all' }}>{{ icons.test }} {{ t.allwords }}</option>
             {% endif %}
         </select>
     </label>
 
-    <label style="margin-left:20px;">{{ icons.stats }} {{ t['knowledege_label'] }}:
+    <label style="margin-left:20px;">{{ icons.stats }} {{ t.knowledege_label }}:
         <select name="knowledgebase">
             {% for k,v in knowledgebase_dict.items() %}
             <option value="{{ k }}" {{ 'selected' if k == knowledgebase }}>
@@ -82,7 +82,7 @@
     </label>
 
     <button type="submit" class="btn-student">
-        {{ icons.change }} {{ t['change'] }}
+        {{ icons.change }} {{ t.change }}
     </button>
 </form>
 
@@ -99,7 +99,7 @@
             {{ word.foreign_word }} → ?
         {% endif %}
         {% if word.info %}
-            <p class="word-info">{{ t['info'] }}: {{ word.info }}</p>
+            <p class="word-info">{{ t.info }}: {{ word.info }}</p>
         {% endif %}
     </div>
 
@@ -116,12 +116,12 @@
         </label>
         <label>
             <input type="checkbox" name="random_direction" value="1" {% if rd == '1' %}checked{% endif %}>
-            {{ t['random'] }}
+            {{ t.random }}
         </label>
     </div>
 
     <button type="submit" class="btn-student">
-        {{ icons.success }} {{ t['test'] }}
+        {{ icons.success }} {{ t.test }}
     </button>
 </form>
 
@@ -129,7 +129,7 @@
 
 <br>
 <div>
-    <a href="/stats" class="btn-student">{{ icons.stats }} {{ t['stats'] }}</a>
+    <a href="/stats" class="btn-student">{{ icons.stats }} {{ t.stats }}</a>
 </div>
 
 {% endblock %}

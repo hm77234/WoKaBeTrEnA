@@ -6,6 +6,7 @@ import re
 
 TEMPLATE_DIR = "./app/templates"
 APP_FILE = "./app/app.py"
+FORM_FILE = "./app/forms.py"
 
 
 # import the data dicts
@@ -73,9 +74,10 @@ if __name__ == "__main__":
     # collect all t / icon keys from templates and app.py
     t_html, icons_html = collect_from_templates(TEMPLATE_DIR)
     t_py, icons_py = collect_from_app(APP_FILE)
+    t_f_py, icons_f_py = collect_from_app(FORM_FILE)
 
-    all_t_keys = t_html | t_py
-    all_icon_keys = icons_html | icons_py
+    all_t_keys = t_html | t_py | t_f_py
+    all_icon_keys = icons_html | icons_py | icons_f_py
 
     # checks
     missing_translation = check_translation(all_t_keys)
