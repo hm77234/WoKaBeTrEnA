@@ -1,11 +1,11 @@
-# app.py new 0.1.122
+# app.py new 0.1.123
 * add new style.css
 * add new menustyle
 * add create group
 
 
 
-# app.py new 0.1.119
+# app.py new 0.1.123
 * add pyinstaller support in app
 * add spec file
 * better translations
