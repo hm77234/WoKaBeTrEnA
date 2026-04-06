@@ -38,7 +38,9 @@
 
 ## 📦 Production with Podman
 
-### Create Persistent Storage
+### Create Podman Volume 
+
+you need a volume dirctory for podman desktop to mount the volume.
 ```bash
 podman volume create trainerdata
 ```
@@ -48,7 +50,7 @@ This commands are examples, check your volumes for the correct startup (expample
 **Non-TLS:**
 ```bash
 podman build -t wokabetrena .
-podman run -d --name trainer -p 8000:8000 -v trainer/app/instance --replace wokabetrena
+podman run -d --name trainer -p 8000:8000 -v trainerdata:/app/instance:z --replace wokabetrena
 ```
 
 **TLS:**
@@ -57,7 +59,8 @@ podman build -t wokabetrena -f Dockerfile_TLS .
 podman run -d --name trainer \
   -v ./your_certs/yourcert.pem:/app/certs/certs.pem \
   -v ./your_certs/yourkey.pem:/app/certs/key.pem \
-  -p 8443:8443 -v trainer/app/instance \
+  -v trainerdata:/app/instance:z \
+  -p 8443:8443 \
   --replace wokabetrena
 ```
 

@@ -17,14 +17,14 @@
     </table>
     
     <form method="POST">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <input type="hidden" name="confirm" value="yes">
         <button type="submit" class="btn btn-danger btn-lg" 
                 onclick="return confirm('{{ icons.alert }} {{ t.really_delete }}?\n\n{{ t.no_back }}');">
             {{ icons.alert }} {{ t.db_reset }}
         </button>
         &nbsp;
-        <a href="{{ url_for('admin') }}" class="btn btn-admin">
+        <a href="{{ url_for('admin.admin') }}" class="btn btn-admin">
             {{ icons.cancel }} {{ t.abort }}
         </a>
     </form>

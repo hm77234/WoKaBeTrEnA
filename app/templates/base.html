@@ -4,7 +4,7 @@
     <title>{{ t.title }}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 
 </head>
@@ -47,14 +47,14 @@
                 <div class="dropdown-content">
                     <!-- Admin-only links -->
                     {% if current_user.is_admin %}
-                        <a href="{{ url_for('admin') }}">{{ icons.admin }} {{ t.dashboard or 'Dashboard' }}</a>
-                        <a href="{{ url_for('admin_users') }}">{{ icons.admin_users }} {{ t.user or 'User' }}</a>
-                        <a href="{{ url_for('admin_groups') }}">{{ icons.admin_users }} {{ t.admin_groups_title or 'Groups' }}</a>
-                        <a href="{{ url_for('admin_group_create') }}">{{ icons.group }} {{ t.create_group or 'Create Group' }}</a>
-                        <a href="{{ url_for('admin_groups_stats') }}">{{ icons.admin_groups }} {{ t.admin_groups_title or 'Group Stats' }}</a>
-                        <a href="{{ url_for('admin_backup_db') }}">{{ icons.save }} {{ t.backup_db or 'Backup DB' }}</a>
-                        <a href="{{ url_for('admin_restore_db') }}">{{ icons.restore }} {{ t.restore_db or 'Restore DB' }}</a>
-                        <a href="{{ url_for('admin_reset_db') }}" class="danger">{{ icons.warning }} {{ t.reset_db or 'Reset DB' }}</a>
+                        <a href="{{ url_for('admin.admin') }}">{{ icons.admin }} {{ t.dashboard or 'Dashboard' }}</a>
+                        <a href="{{ url_for('admin.admin_users') }}">{{ icons.admin_users }} {{ t.users or 'User' }}</a>
+                        <a href="{{ url_for('wordgroups.admin_groups') }}">{{ icons.admin_users }} {{ t.admin_groups_title or 'Groups' }}</a>
+                        <a href="{{ url_for('wordgroups.admin_group_create') }}">{{ icons.group }} {{ t.create_group or 'Create Group' }}</a>
+                        <a href="{{ url_for('wordgroups.admin_groups_stats') }}">{{ icons.admin_groups }} {{ t.admin_groups_title or 'Group Stats' }}</a>
+                        <a href="{{ url_for('admin.admin_backup_db') }}">{{ icons.save }} {{ t.backup_db or 'Backup DB' }}</a>
+                        <a href="{{ url_for('admin.admin_restore_db') }}">{{ icons.restore }} {{ t.restore_db or 'Restore DB' }}</a>
+                        <a href="{{ url_for('admin.admin_reset_db') }}" class="danger">{{ icons.warning }} {{ t.reset_db or 'Reset DB' }}</a>
 
 
                         <div class="dropdown-separator"></div>

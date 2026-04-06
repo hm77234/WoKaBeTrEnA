@@ -4,7 +4,7 @@
 {% if knowledgebase_dict is defined %}
 <p>{{ t.no_words_found_in_knowledgebase }}</p>
 <form method="POST">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <div>
         <label> {{ icons.group }} {{ t.knowledgelevellabel or "Knowledge Level" }} :
             <select name="knowledgebase">

@@ -5,7 +5,7 @@
     
     <div class="alert alert-success">
         <strong> {{ icons.save }} {{ t.db_backup_desc }}</strong><br>
-        <small> {{ t.db_backup_info.format(timestamp=timestamp) | safe }}</small>
+        <small> {{ t.db_backup_info }} {{db_name}}{{t.db_backup_file_name.format(timestamp=timestamp) | safe }}</small>
     </div>
     
     <h3>{{ t.db_current_data }}:</h3>
@@ -17,11 +17,12 @@
     </table>
     
     <form method="POST">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="backupfilename" value="{{ t.db_backup_file_name.format(timestamp=timestamp) | safe }}">
         <button type="submit" class="btn btn-admin">
             {{ icons.save }} {{ t.save }}
         </button>
-        <a href="{{ url_for('admin') }}" class="btn btn-admin">
+        <a href="{{ url_for('admin.admin') }}" class="btn btn-admin">
             {{ icons.cancel }} {{ t.abort }}
         </a>
     </form>

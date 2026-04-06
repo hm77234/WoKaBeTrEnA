@@ -1,11 +1,45 @@
-# app.py new 0.1.123
+# app.py new 0.1.131
+* add tests to deploy.sh
+
+# app.py 0.1.131
+* add Restore db, check restore test
+* add typ1 test
+
+
+# app.py 0.1.130
+* add functony.py
+* BUGFIX admin user delete redirects
+* ADD adduser, deleteuser test, group tests, add group test, backup test
+
+# app.py 0.1.129
+* add tests dir wit pytest functionality
+* BUGFIX csrf_token() to csrf_token
+
+# app.py  0.1.128
+* testing docker tls
+* bugfix edit word in html template
+
+# app.py 0.1.127
+* bugfix csrf token with blueprints
+
+# app.py 0.1.126
+* move templates in admin template and wordgroups template
+
+# app.py 0.1.125
+* add new file util.py
+
+# app.py 0.1.124
+* add redesign
+* split routes
+
+# app.py 0.1.123
 * add new style.css
 * add new menustyle
 * add create group
 
 
 
-# app.py new 0.1.123
+# app.py 0.1.122
 * add pyinstaller support in app
 * add spec file
 * better translations

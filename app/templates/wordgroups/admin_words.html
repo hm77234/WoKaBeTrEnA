@@ -14,7 +14,7 @@
         >
         <button type="submit" style="padding:10px 20px;">🔍</button>
         {% if q %}
-            <a href="?{{ url_for('admin_words', pair_name=pair.name) }}" 
+            <a href="?{{ url_for('wordgroups.admin_words', pair_name=pair.name) }}" 
                style="padding:10px 20px; background:#6c757d; color:white;">{{ icons['delete'] }} Reset</a>
         {% endif %}
     </form>
@@ -51,12 +51,12 @@
             <td class="score-cell">{{ word.score_pct }}%</td>
             <td class="action-cell">    
                 <button class="edit-btn">{{ icons['edit'] }}</button>
-                <a href="{{ url_for('admin_edit_word_groups', word_id=word.id) }}"
+                <a href="{{ url_for('wordgroups.admin_edit_word_groups', word_id=word.id) }}"
                 class="btn-group-assign">
                     {{ icons['group'] }} 
                 </a>
                 <form style="display:inline;">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <button type="button" onclick="deleteWord('{{ word.id }}', '{{ word.language_pair.name }}')" 
                             class="btn btn-sm btn-outline-danger">
                         {{ icons['delete'] }} 
@@ -172,7 +172,7 @@ async function saveRow(wordId) {
     }
     
     try {
-        const response = await fetch(`/admin/update_word/${wordId}`, {
+        const response = await fetch(`/wordgroups/update_word/${wordId}`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': csrfToken,

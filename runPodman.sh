@@ -1,3 +1,4 @@
+#!/bin/bash
 PROJECTNAME="wokabetrena"
 echo "Project name $PROJECTNAME"
 IMAGENAME="localhost/$PROJECTNAME"

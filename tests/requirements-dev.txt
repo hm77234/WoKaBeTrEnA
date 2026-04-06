@@ -1,0 +1,12 @@
+pytest==8.3.3
+pytest-flask
+pytest-cov
+flask-sqlalchemy
+pytest==8.3.3
+pytest-flask
+pytest-cov
+flask-login
+werkzeug
+bs4
+selenium
+webdriver-manager

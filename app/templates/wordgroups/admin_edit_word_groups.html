@@ -3,7 +3,7 @@
 <h1>{{ icons['words'] }} {{ word.mutter_word }} → Gruppen</h1>
 
 <form method="POST">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <fieldset>
         <legend>{{ t.assign_groups }}</legend>
         <ul style="list-style:none; padding:0;">
@@ -25,7 +25,7 @@
 
     <div style="margin-top:20px;">
         <button type="submit">{{ icons['save'] }} {{ t.save }}</button>
-        <a href="{{ url_for('admin_words', pair_name=word.language_pair.name) }}"
+        <a href="{{ url_for('wordgroups.admin_words', pair_name=word.language_pair.name) }}"
            style="margin-left:10px;">
             {{ icons['cancel'] }} {{ t.cancel or 'Abbrechen' }}
         </a>

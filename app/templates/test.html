@@ -8,7 +8,7 @@
   </h1>
  
   <form method="POST" style="background:#f8f9fa; padding:30px; border-radius:12px;">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <h3>{{ icons.rocket }} {{ t.start_test_title }}</h3>
 
         <div style="margin:20px 0;">
@@ -57,7 +57,7 @@
 {% endif %}
 
 <form method="POST" style="background:#f0f8ff; padding:15px; margin-bottom:20px; border-radius:8px;">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
     <label>{{ icons.group }} {{ t.group }}:
         <select name="group">
@@ -87,7 +87,7 @@
 </form>
 
 <form method="POST">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <input type="hidden" name="word_id" value="{{ word.id }}">
     <input type="hidden" name="knowledgebase" value="{{ knowledgebase }}">
     <input type="hidden" name="group" value="{{ selected_group }}">
