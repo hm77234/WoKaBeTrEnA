@@ -38,7 +38,7 @@ import warnings
 warnings.filterwarnings("ignore", category=SAWarning)
 
 
-__VERSION__ = "0.1.134"
+__VERSION__ = "0.1.135"
 
 
 ##READ ENV VARS

@@ -14,7 +14,7 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import glob
 
-__VERSION__ = "0.1.134"
+__VERSION__ = "0.1.135"
 
 
 # Konfiguration
