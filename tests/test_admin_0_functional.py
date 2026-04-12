@@ -61,12 +61,19 @@ def test_login_failed(api_client):
     post_resp = api_client.post("/login", data=login_data, headers=headers, follow_redirects=True)
     assert post_resp.status_code == 200
     assert "Falsche Anmeldeinformationen!" in post_resp.text
-
+    
+def test_noword_admin_handling(logged_in_client):
+    """ prüft das No Word Verhalten"""
+    response = logged_in_client.get("/test/deutsch-englisch")
+    assert response.status_code == 200
+    assert "Keine Vokabeln gefunden Deutsch → Englisch!" in response.text
+    
+    
 def test_app_functionality_upload_csv_typ_1(logged_in_client):
     """Upload von Files"""
     resp = logged_in_client.get("/")
     assert resp.status_code == 200
-    assert "Admin Dashboard" in resp.text
+    assert "Lerne effizient neue Sprachen" in resp.text
     resp = logged_in_client.get("/admin", follow_redirects=True)
     assert resp.status_code == 200
     soup = BeautifulSoup(resp.text, "html.parser")
@@ -111,7 +118,7 @@ def test_app_functionality_upload_csv_typ_2(logged_in_client):
     """Upload von Files"""
     resp = logged_in_client.get("/")
     assert resp.status_code == 200
-    assert "Admin Dashboard" in resp.text
+    assert "Lerne effizient neue Sprachen" in resp.text
     resp = logged_in_client.get("/admin", follow_redirects=True)
     assert resp.status_code == 200
     soup = BeautifulSoup(resp.text, "html.parser")
@@ -157,7 +164,7 @@ def test_app_functionality_add_user(logged_in_client):
     """Add User"""
     resp = logged_in_client.get("/")
     assert resp.status_code == 200
-    assert "Admin Dashboard" in resp.text
+    assert "Lerne effizient neue Sprachen" in resp.text
     resp = logged_in_client.get("/admin/users", follow_redirects=True)
     soup = BeautifulSoup(resp.text, "html.parser")
     # Sucht nach <input name="csrf_token" value="...">
@@ -223,7 +230,7 @@ def test_app_functionality_group_stats(logged_in_client):
     assert "Wortgruppe" in resp.text
     assert "essen" in resp.text 
     assert "student" in resp.text 
-
+    
 
 #BACKUP   
 def test_app_functionality_backup(logged_in_client_session, backup_filename):  

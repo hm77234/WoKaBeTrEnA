@@ -197,6 +197,9 @@ async function saveRow(wordId) {
             // Reset action buttons MIT edit-btn
             row.querySelector('.action-cell').innerHTML = 
                 `<button class="edit-btn">{{ icons['edit'] }}</button>
+                <a href="/wordgroups/admin_edit_word_groups/${wordId}" class="btn-group-assign">
+                    {{ icons['group'] }}
+                </a>
                  <button class="delete-btn" data-word-id="${wordId}" data-mutter="${data.word.mutter_word}">{{ icons['delete'] }}</button>`;
             
             // Update data-* attributes
@@ -225,6 +228,9 @@ function cancelEdit(wordId) {
     // Reset action buttons
     row.querySelector('.action-cell').innerHTML = `
         <button class="edit-btn">{{ icons['edit'] }}</button>
+         <a href="/wordgroups/admin_edit_word_groups/${wordId}" class="btn-group-assign">
+        {{ icons['group'] }}
+        </a>
         <button class="delete-btn" data-word-id="${wordId}" data-mutter="${row.dataset.mutter}">{{ icons['delete'] }}</button>
     `;
 }
@@ -234,7 +240,8 @@ function cancelEdit(wordId) {
 
 // Event Listeners (delegation)
 document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('edit-btn')) {
+    const btn = e.target.closest('.edit-btn');
+    if (btn) {
         const row = e.target.closest('tr');
         const wordId = row.dataset.wordId;
         editRow(parseInt(wordId));

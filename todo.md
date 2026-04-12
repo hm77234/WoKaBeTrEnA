@@ -1,4 +1,9 @@
 # TODO
+ * noword test
+ * dbreset test
+ * db selective recovery test
+ * db delete word and recover pytest
+ * edit words pytest
 ## BUGS
 ### progres
 
@@ -7,6 +12,7 @@
 
 ## new feature list
 ### progres
+ * pytest
  * stylesheets
  * group manipulation
 

@@ -230,3 +230,141 @@ body {
 .dropdown:hover .dropdown-content {
     display: block;
 }
+.dropdown-separator {
+  height: 1px;
+  margin: 8px 0;
+  background-color: #ddd;
+  border: 0;
+}
+.vocab-page {
+    max-width: 1400px;
+    margin: auto;
+}
+
+.vocab-hero {
+    text-align: center;
+}
+
+.vocab-title {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.vocab-subtitle {
+    color: #64748b;
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 12px auto 0;
+}
+
+.lang-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 24px;
+    margin: 40px 0;
+}
+
+.lang-card {
+    position: relative;
+    overflow: hidden;
+    padding: 28px;
+    border-radius: 20px;
+    background: radial-gradient(circle at top right, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+    transition: all 0.25s ease;
+    will-change: transform;
+}
+
+.lang-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+}
+
+.lang-card-decoration {
+    position: absolute;
+    top: auto;
+    right: -80px;
+    bottom: auto;
+    left: auto;
+    width: 160px;
+    height: 160px;
+    opacity: 0.4;
+    background: radial-gradient(circle, #e2e8f0 0%, transparent 70%);
+}
+
+.lang-card-header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.lang-card-icon {
+    font-size: 44px;
+    line-height: 1;
+}
+
+.lang-card-label {
+    margin-bottom: 4px;
+    color: #64748b;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.lang-card-title {
+    margin: 0;
+    color: #1e293b;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.lang-card-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.action-button {
+    display: block;
+    padding: 14px 20px;
+    border-radius: 14px;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.action-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.action-button-primary {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+    font-weight: 500;
+}
+
+.action-button-warning {
+    position: relative;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.35);
+    font-weight: 600;
+}
+
+.action-button-icon {
+    margin-bottom: 4px;
+    font-size: 22px;
+}
+
+.action-button-text {
+    font-size: 13px;
+}

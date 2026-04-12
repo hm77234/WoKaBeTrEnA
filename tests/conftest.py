@@ -12,12 +12,17 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
+import glob
+
+__VERSION__ = "0.1.134"
+
 
 # Konfiguration
-DB_NAME = "vocab.db"
+DB_NAME = "test_vocab.db"
 DB_PATH = "volume/" + DB_NAME
-DB_FLAG = "volume/db_initialized.flag"
-BASE_URL = "https://localhost:8443"
+DB_FLAG = "volume/test_db_initialized.flag"
+DB_BACK_UP_EXTENSION = ".backup"
+BASE_URL = "https://localhost:9443"
 CONTAINER_NAME = "wokabetrena"  # Name deines Podman-Containers
 ADMIN_AUTH = ("admin", "admin123")
 ADMIN_USER = "admin"
@@ -31,6 +36,8 @@ TEST_GRUPPEN_BESCHREIBUNG = "Testgruppe Beschreibung"
 TESTFILE_PATH = "./examples/"
 TESTFILE_TYP_1 = "deutsch_spanische_example.csv"
 TESTFILE_TYP_2 = "deutsch_spanisch_verbs_declination.csv"
+PODMANSTARTFILE = "./runPodmanTEST.sh"
+
 
 
 
@@ -91,8 +98,10 @@ def reset_environment():
         os.remove(DB_PATH)
     if os.path.exists(DB_FLAG):
         os.remove(DB_FLAG)
+    for path in glob.glob(f"{DB_PATH}.*{DB_BACK_UP_EXTENSION}"):
+        os.remove(path)
     
-    subprocess.run(["./runPodman.sh"], check=True)
+    subprocess.run([PODMANSTARTFILE], check=True)
     time.sleep(5)
 
 @pytest.fixture(scope="function")
@@ -141,6 +150,11 @@ def logged_in_student_client(student_client):
 @pytest.fixture
 def logged_in_driver(driver):
     perform_browser_login(driver, ADMIN_USER, ADMIN_PW)
+    return driver
+
+@pytest.fixture
+def logged_in_student_driver(driver):
+    perform_browser_login(driver, STUDENT_USER, STUDENT_PW)
     return driver
 
 

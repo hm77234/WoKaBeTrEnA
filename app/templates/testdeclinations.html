@@ -21,10 +21,7 @@
                                 {% endfor %}
                             {% endif %}
                         {% endwith %}
-                        <a href="{{ url_for('declination_settings', pair_name=pair.name) }}"
-                            class="btn btn-outline-light btn-sm">
-                            {{ icons.admin }} {{ t.testdeclinationsettings or 'Einstellungen' }}
-                        </a>          
+                            
                         <form method="POST">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
@@ -93,6 +90,7 @@
                             <div class="mb-4">
                                 <label class="form-label fs-1">{{ t.answer or 'Antwort' }}</label>
                                 <input type="text"
+                                       size="50" 
                                        name="answer"
                                        class="form-control form-control-lg text-center fs-2 py-4" 
                                        placeholder="{{ t.enterform or 'Eine Deklination eingeben...' }}" 
@@ -106,9 +104,7 @@
                                 <button type="submit" class="btn btn-primary btn-lg px-5">
                                     {{ t.check or 'Prüfen' }} {{ icons.check }}
                                 </button>
-                                <a href="{{ url_for('reset_test_group') }}" class="btn btn-secondary btn-lg ms-2">
-                                    {{ t.reset or 'Zurücksetzen' }}
-                                </a>
+                           
                             </div>
                         </form>
 

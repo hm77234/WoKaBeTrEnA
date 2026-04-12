@@ -100,7 +100,7 @@ TRANSLATIONS = {
         'selecttense': 'Zeit wählen',
         'nodeclinations': 'Keine Deklinationen verfügbar!',
         'baseform': 'Grundform',
-        'enterform': 'Gib eine Form in der gewählten Zeit ein (s1-m3)',
+        'enterform': 'Gib die geforderten Zeiten, getrennt durch ein Beistrich, ein',
         'correctforms': 'Korrekte Formen',
         'formslabel': 's1, s2, s3, m1, m2, m3',  # for Feedback-Grid
         'persons_label': {
@@ -167,6 +167,7 @@ TRANSLATIONS = {
         'dashboard': 'Dashboard',
         'groupcreatemessage': 'Gruppe erfolgreich angelegt',
         'word_group_updated': 'Wortgruppe aktualisiert',
+        'change_passwort': 'Passwort wechseln'
     },
     'english': {
         'native_name': 'English',
@@ -331,7 +332,7 @@ TRANSLATIONS = {
         'create_group': 'Create Group',
         'start_test_button': 'Start Test',
         'assign_groups': 'Assign Groups',
-        
+        'change_passwort': 'change password'
     },
     'espanol': {
         'native_name': 'Español',
@@ -496,6 +497,7 @@ TRANSLATIONS = {
         'create_group': 'Crear Grupo',
         'start_test_button': 'Iniciar Prueba',
         'assign_groups': 'Asignar Grupos',
+        'change_passwort': 'Cambiar contraseña'
     },
     'italiano': {
         'native_name': 'Italiano',
@@ -660,6 +662,7 @@ TRANSLATIONS = {
         'create_group': 'Crea Gruppo',
         'start_test_button': 'Avvia Test',
         'assign_groups': 'Assegna Gruppi',
+        'change_passwort': 'Cambiare password'
     }          
 }
 

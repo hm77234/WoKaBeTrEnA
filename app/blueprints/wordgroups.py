@@ -215,7 +215,7 @@ def admin_delete_word_api(word_id):
     return jsonify({
         'success': True,
         'message': i['success'] + " " + t['word_deleted'],
-        'redirect': url_for('wordgroups.admin_words.html', pair_name=pair_name)
+        'redirect': url_for('wordgroups.admin_words', pair_name=pair_name)
     })
 
 @wordgroups_bp.route("/edit_word_groups/<int:word_id>", methods=["GET", "POST"])
@@ -237,7 +237,7 @@ def admin_edit_word_groups(word_id):
         word.training_groups = [g for g in all_groups if g.id in selected_group_ids]
         db.session.commit()
         flash(f'{i["success"]} {t["word_group_updated"]}  ', "success")
-        return redirect(url_for('wordgroups.admin_words.html', pair_name=word.language_pair.name))
+        return redirect(url_for('wordgroups.admin_words', pair_name=word.language_pair.name))
 
     return render_template(
         "admin_edit_word_groups.html",

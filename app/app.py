@@ -38,7 +38,7 @@ import warnings
 warnings.filterwarnings("ignore", category=SAWarning)
 
 
-__VERSION__ = "0.1.132"
+__VERSION__ = "0.1.134"
 
 
 ##READ ENV VARS
@@ -445,7 +445,7 @@ def testdeclination(pair_name):
     #selected_tense = request.args.get('tense', tense_name)
     selected_group = session.get("selected_group", "all")
     selected_tense = session.get("selected_tense", "random")
-    
+
     # Get language pair (same as original)
     pair = LanguagePair.query.filter(
         db.or_(
@@ -476,9 +476,7 @@ def testdeclination(pair_name):
         group = request.form.get('group', group)
         tense_name = request.form.get('tense', 'random')  # User-selected tense
         #test_direction = request.form.get('direction', direction)
-        
 
-        
         session['testdeclgroup'] = group  # Persist
         session['testdecltense'] = tense_name  # New persistence
 
@@ -505,13 +503,14 @@ def testdeclination(pair_name):
             
                     target_forms = [f for f in target_forms if f]  # Filter empty
 
+                    # split user answer with ,
                     useranswer_list = user_answer.split(",")
                     min_len = min(len(target_forms), len(useranswer_list))
                     for c, user_ans in enumerate(useranswer_list[:min_len]):
                         tf = target_forms[c].lower()  # Corresponding target
-                        similarity = SequenceMatcher(None, user_ans, tf).ratio()
+                        #remove all whitespaces for similarity
+                        similarity = SequenceMatcher(None, user_ans.replace(" ", ""), tf.replace(" ", "")).ratio()
 
-                        
                         if similarity >= 0.95:
                             word.checks_correct += 1
                             current_user.checks_correct += 1
@@ -746,7 +745,6 @@ def test(pair_name):
     
     selected_group = session.get('test_group', 'all')
     selected_kb = session.get('test_kb', 'random')
-    print(selected_kb)
     direction_pairs = [ {"long": pair.from_mutter_native, "short": "A→B"}, {"long": pair.from_foreign_native, "short": "B→A"} ]
  
     #initial values
@@ -891,7 +889,8 @@ def test(pair_name):
         status = knowledgebase_dict[selected_kb]["status"]
         logger.debug("Knowledgbase: " + status )
     else: #fallback
-        logger.warning("Fallback for knowledge used!")
+        # if knowledge base is empty
+        logger.warning("Fallback for knowledge based used!")
         words = query.order_by(func.random()).limit(50).all()
         status = f"{t['allwords']} ({selected_group})"
         logger.debug("Knowledgbase (fallback): " + status )
@@ -928,6 +927,30 @@ def test(pair_name):
         selected_kb=selected_kb,
         user_pref=user_pref
     )
+    
+@app.route("/declination/settings", methods=["GET", "POST"])
+@login_required_change_password
+def fetch_pair_for_declinations():
+
+    mutter = app.config["MUTTERLANG"]
+    t = app.config["TRANSLATIONS"]
+    icons = app.config["ICONS"]
+    if request.method == "GET":
+        pairs = LanguagePair.query.all()
+        pair_names = [pair.name for pair in pairs]          
+        print(pair_names)
+        return render_template(
+            "declination_settings.html",
+            pairs=pair_names,
+            action="fetch_pair",
+            t=t,
+            icons=icons
+        )
+    else:
+        pair_name = request.form.get("pair")
+        return redirect(url_for("declination_settings", pair_name=pair_name))       
+
+
 
 @app.route("/declination/settings/<pair_name>", methods=["GET", "POST"])
 @login_required_change_password
@@ -937,6 +960,7 @@ def declination_settings(pair_name):
     t = app.config["TRANSLATIONS"]
     icons = app.config["ICONS"]
 
+ 
     pair = LanguagePair.query.filter(
         db.or_(
             LanguagePair.name == pair_name,
@@ -954,7 +978,7 @@ def declination_settings(pair_name):
         # make session permanent (if not already globally set)
         session.permanent = True
 
-        return redirect(url_for("testdeclination", pair_name=pair_name))
+        return redirect(url_for("testdeclination", pair_name=pair_name,t=t,icons=icons))
 
     groups = get_declination_groups(pair, mutter)
     available_tenses = get_available_declination_tenses(pair)
@@ -967,7 +991,8 @@ def declination_settings(pair_name):
         selected_group=session.get("selected_group", "all"),
         selected_tense=session.get("selected_tense", "random"),
         t=t,
-        icons=icons
+        icons=icons,
+        action="set_dec"
     )
     
 @app.route('/reset_test_group', methods=['GET', 'POST'])

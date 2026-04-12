@@ -1,4 +1,18 @@
-# app.py new 0.1.132
+# app.py new 0.1.134
+* BUGFIX edit words, after edit , group edit icon was missing
+* PUT style from index into style.css file
+* ADD test for student declination settings
+
+# app.py 0.1.134
+* BUGFIX similarity, remove all whitespaces
+* changed to runPodmanTEST.sh
+* changed to test_vocab.db for pytests
+* change declination settings
+
+# app.py 0.1.133
+* add typ2 tests
+
+# app.py  0.1.132
 * add tests to deploy.sh
 
 # app.py 0.1.131
@@ -12,7 +26,7 @@
 * ADD adduser, deleteuser test, group tests, add group test, backup test
 
 # app.py 0.1.129
-* add tests dir wit pytest functionality
+* add tests dir with pytest functionality
 * BUGFIX csrf_token() to csrf_token
 
 # app.py  0.1.128

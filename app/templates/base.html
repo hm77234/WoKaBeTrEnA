@@ -27,7 +27,7 @@
                     {{ current_user.username }}
                 </span>
 
-                <a href="{{ url_for('change_pw.change_password') }}">🔒 Change Password</a>
+                
 
                 {% if current_user.is_admin %}
                     <a href="/reset_test_group">⏭️ Reset testgroup</a>
@@ -47,6 +47,7 @@
                 <div class="dropdown-content">
                     <!-- Admin-only links -->
                     {% if current_user.is_admin %}
+
                         <a href="{{ url_for('admin.admin') }}">{{ icons.admin }} {{ t.dashboard or 'Dashboard' }}</a>
                         <a href="{{ url_for('admin.admin_users') }}">{{ icons.admin_users }} {{ t.users or 'User' }}</a>
                         <a href="{{ url_for('wordgroups.admin_groups') }}">{{ icons.admin_users }} {{ t.admin_groups_title or 'Groups' }}</a>
@@ -55,16 +56,24 @@
                         <a href="{{ url_for('admin.admin_backup_db') }}">{{ icons.save }} {{ t.backup_db or 'Backup DB' }}</a>
                         <a href="{{ url_for('admin.admin_restore_db') }}">{{ icons.restore }} {{ t.restore_db or 'Restore DB' }}</a>
                         <a href="{{ url_for('admin.admin_reset_db') }}" class="danger">{{ icons.warning }} {{ t.reset_db or 'Reset DB' }}</a>
-
-
+                        <div class="dropdown-separator"></div>
+                        <a href="{{ url_for('change_pw.change_password') }}">{{ icons.change_password }}{{ t.change_passwprd or 'Change Password' }}</a>
                         <div class="dropdown-separator"></div>
                     {% endif %}
 
+
                     <!-- Student-only links -->
                     {% if is_student() %}
-                        <a href="{{ url_for('stats') }}">{{ icons['stats'] }} Meine Stats</a>
+                        <a href="{{ url_for('stats') }}">{{ icons.stats }}{{ t.stats or 'meine Stats' }}</a>
+                        <a href="{{ url_for('fetch_pair_for_declinations') }}"> {{ icons.admin }} {{ t.testdeclinationsettings or 'Declinationseinstellungen' }}</a>
+                        <a href="{{ url_for('reset_test_group') }}" >{{ icons.restore }} {{ t.reset or 'Sprachpaare zurücksetzen' }}</a>
+                        
                         <!-- more student links here if needed -->
                     {% endif %}
+                     <!-- all users -->
+                        
+                      
+
                 </div>
             </div>
         </div>
@@ -72,9 +81,13 @@
         <!-- CENTER: Only student dropdown (no admin) -->
         <div class="nav-center">
             <div class="dropdown">
-                <button class="dropbtn">👨‍🎓 Student ▾</button>
+                <button class="dropbtn">{{ t.settings }} {{ icons.arrow_down}} </button>
                 <div class="dropdown-content">
-                    <a href="{{ url_for('stats') }}">{{ icons['stats'] }} Meine Stats</a>
+                    <a href="{{ url_for('change_pw.change_password') }}">{{ icons.change_password }}{{ t.change_passwprd or 'Change Password' }}</a>
+                    <div class="dropdown-separator"></div>
+                    <a href="{{ url_for('stats') }}">{{ icons.stats }}{{ t.stats or 'meine Stats' }}</a>
+                    <a href="{{ url_for('fetch_pair_for_declinations') }}"> {{ icons.admin }} {{ t.testdeclinationsettings or 'Declinationseinstellungen' }}</a>
+                    <a href="{{ url_for('reset_test_group') }}" >{{ icons.restore }} {{ t.reset or 'Sprachpaare zurücksetzen' }}</a>
                 </div>
             </div>
         </div>
@@ -88,11 +101,6 @@
 
 
     <!-- Student-Only Links -->
-    {% if is_student() %}
-        <div style="background:#e8f5e8; padding:10px; border-radius:4px; margin-bottom:20px;">
-            <a href="{{ url_for('stats') }}" class="btn-student">{{ icons['stats'] }} Meine Stats</a>
-        </div>
-    {% endif %}
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages() %}
